@@ -56,6 +56,18 @@ impl Piece {
         
     }
 
+    pub fn to_unicode(&self) -> &str {
+        match &self {
+            Piece::Pawn(_) => "♙",
+            Piece::Knight(_) => "♘",
+            Piece::Bishop(_) => "♗",
+            Piece::Rook(_) => "♖",
+            Piece::Queen(_) => "♕",
+            Piece::King(_) => "♔",
+        }
+        
+    }
+
     fn _pick(color:Color,upper:char,lower:char)->char{
         if color==Color::white{
             upper
@@ -103,6 +115,18 @@ impl PieceCompute for Pawn{
         let color_bitboard = board.by_color.get(mov.color());
         
         let file_bitboard = file.get_bit_board();
+
+        let attack_bitboard = if(!mov.is_capture){
+            file_bitboard.get()
+        }else{
+            let delta = if mov.color()==Color::white{
+                [7, 9]
+            }else{
+                [-7, -9]
+            };
+
+            compute_attack_squares(mov.get_target_index().unwrap() as i8, &delta, true)
+        };
 
         let source = piece_bitboard.get() & color_bitboard.get() & file_bitboard.get();    
         

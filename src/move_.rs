@@ -5,7 +5,7 @@ pub struct Move{
     san: String,
     pub index: u16,
     pub piece: Piece,
-    is_capture: bool,
+    pub is_capture: bool,
     pub castling: Option<Castling>,
     target_square: Option<String> // will be None if its a castling 
 

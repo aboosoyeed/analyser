@@ -75,7 +75,58 @@ impl Board {
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.occupied.printable())
+        
+        let mut fmt_str= String::from("");
+        for rank in (0..8).rev() {
+            for file in 0..8 {
+                let index = rank * 8 + file;
+                let bit = if self.occupied.get_bit(index) { 
+                    let color = if self.by_color.white.get_bit(index){
+                        "yellow"
+                    }else{
+                        "blue"
+                    };
+                    color_str(get_piece(index, self).unwrap().to_unicode(), color) 
+                }else {
+                    color_str("◻", "gray") 
+                };
+                fmt_str.push_str(&format!("{} ", bit)) ;
+            }
+            fmt_str.push_str("\n\r");
+        }
+
+        
+        
+        f.write_str(&fmt_str)
+
     }
 }
 
+
+
+fn color_str(str: &str, color:&str)->String{
+    
+    let code = if color=="yellow"{
+        "33m"
+    } else if color=="blue"{
+        "34m"
+    } else if color=="gray"{
+        "30m"
+    }
+    else{
+        "37m"
+    };
+    
+    format!("\x1b[{}{}\x1b[0m",code,str )
+}
+
+fn get_piece(index:u8,board:&Board) ->Result<Piece, &'static str>{
+    let mask = 1<< index;
+    for piece in Piece::get_all(){
+        let piece_board = board.by_piece.get(piece);
+        if (piece_board.get() & mask) !=0{
+            return Ok(piece);
+        } 
+    }
+    Err("piece not found")
+}

@@ -16,7 +16,7 @@ impl Bitboard {
         self.0 &= !(1 << index);
     }
 
-    fn get_bit(&self, index: u8) -> bool {
+    pub fn get_bit(&self, index: u8) -> bool {
         (self.0 & (1 << index)) != 0
     }
 
