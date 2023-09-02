@@ -6,6 +6,17 @@ pub enum  Color{
     black
 }
 
+impl Color {
+    pub fn get_opposite(&self)->Color{
+        if *self==Color::white{
+            Color::black
+        }else{
+            Color::white
+        }
+    }
+}
+
+
 pub struct ByColor {
     pub black: Bitboard,
     pub white: Bitboard,

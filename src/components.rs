@@ -91,7 +91,8 @@ pub trait PieceCompute {
         todo!()
     }
 
-    fn _compute_source(piece:Piece,board:&Board,mov:Move, deltas:&[i8], step_only:bool) -> u8{
+    fn _compute_source(board:&Board,mov:Move, deltas:&[i8], step_only:bool) -> u8{
+        let piece = mov.piece;
         let piece_bitboard = board.by_piece.get(piece);
         let color_bitboard = board.by_color.get(mov.color());
         let attack_bitboard = compute_attack_squares(mov.get_target_index().unwrap() as i8, deltas, step_only);
@@ -100,7 +101,7 @@ pub trait PieceCompute {
         //println!("{}",piece_bitboard.printable());
         //println!("{}",color_bitboard.printable());
         
-        assert_eq!(source.count_ones(),1);
+        assert_eq!(source.count_ones(),1,"Bitboard \n{}", Bitboard(attack_bitboard).printable());
         return source.trailing_zeros() as u8
 
     }
@@ -116,50 +117,50 @@ impl PieceCompute for Pawn{
         
         let file_bitboard = file.get_bit_board();
 
-        let attack_bitboard = if(!mov.is_capture){
+        let attack_bitboard = if !mov.is_capture {
             file_bitboard.get()
         }else{
             let delta = if mov.color()==Color::white{
-                [7, 9]
-            }else{
                 [-7, -9]
+            }else{
+                [7, 9]
             };
 
             compute_attack_squares(mov.get_target_index().unwrap() as i8, &delta, true)
         };
 
-        let source = piece_bitboard.get() & color_bitboard.get() & file_bitboard.get();    
+        let source = piece_bitboard.get() & color_bitboard.get() & attack_bitboard;    
         
-        assert_eq!(source.count_ones(),1);
+        assert_eq!(source.count_ones(),1,"Bitboard \n{}",Bitboard(attack_bitboard).printable());
 
         return source.trailing_zeros() as u8
     }
 }
 impl PieceCompute for Knight{
     fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(Piece::Knight(Knight),board, mov, &[17, 15, 10, 6, -17, -15, -10, -6], true)
+        Self::_compute_source(board, mov, &[17, 15, 10, 6, -17, -15, -10, -6], true)
     }
 }
 
 impl PieceCompute for Bishop{
     fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(Piece::Bishop(Bishop),board, mov, &[9, 7, -9, -7], false)
+        Self::_compute_source(board, mov, &[9, 7, -9, -7], false)
     }
 }
 
 impl PieceCompute for Rook{
     fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(Piece::Rook(Rook),board, mov, &[1,8,-1,-8], false)
+        Self::_compute_source(board, mov, &[1,8,-1,-8], false)
     }
 }
 impl PieceCompute for Queen{
     fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(Piece::Queen(Queen),board, mov, &[1,8,7,9,-1,-8, -7, -9], false)
+        Self::_compute_source(board, mov, &[1,8,7,9,-1,-8, -7, -9], false)
     }
 }
 impl PieceCompute for King{
     fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(Piece::King(King),board, mov, &[9, 8, 7, 1, -9, -8, -7, -1], true)
+        Self::_compute_source(board, mov, &[9, 8, 7, 1, -9, -8, -7, -1], true)
     }
 }
 

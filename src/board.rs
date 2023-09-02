@@ -19,7 +19,7 @@ impl Board {
 
     pub fn apply_move(&mut self, mov : Move){
         //println!("{:?}",target);
-        if mov.index < 14 {
+        if mov.index < 25 {
             if mov.castling.is_some() {
                 self.apply_castling(mov)
             }else{
@@ -44,10 +44,18 @@ impl Board {
         let target = mov.get_target_index();
         let color = mov.color();
         let piece = mov.piece;
-            
+        let is_capture = mov.is_capture;     
         let source = self.get_source_index(mov);
             
-        self.move_piece(source, target.unwrap(), color, piece)
+        if is_capture{
+            let opp_color_board = &mut self.by_color.get_mut(color.get_opposite());
+            opp_color_board.clear_bit(target.unwrap());
+            let opp_piece = self.get_piece_at_index(target.unwrap());
+            let opp_piece_board = &mut self.by_piece.get_mut(opp_piece.unwrap());
+            opp_piece_board.clear_bit(target.unwrap())
+        }
+        self.move_piece(source, target.unwrap(), color, piece);
+        
     }
     
     fn move_piece(&mut self, source:u8, target:u8, color:Color, piece:Piece){
@@ -71,6 +79,17 @@ impl Board {
         piece.compute_source(self,mov)
     }
 
+    fn get_piece_at_index(&self,index:u8) ->Result<Piece, &'static str>{
+        let mask = 1<< index;
+        for piece in Piece::get_all(){
+            let piece_board = self.by_piece.get(piece);
+            if (piece_board.get() & mask) !=0{
+                return Ok(piece);
+            } 
+        }
+        Err("piece not found")
+    }
+
 }
 
 impl fmt::Display for Board {
@@ -86,7 +105,7 @@ impl fmt::Display for Board {
                     }else{
                         "blue"
                     };
-                    color_str(get_piece(index, self).unwrap().to_unicode(), color) 
+                    color_str(self.get_piece_at_index(index).unwrap().to_unicode(), color) 
                 }else {
                     color_str("◻", "gray") 
                 };
@@ -120,13 +139,3 @@ fn color_str(str: &str, color:&str)->String{
     format!("\x1b[{}{}\x1b[0m",code,str )
 }
 
-fn get_piece(index:u8,board:&Board) ->Result<Piece, &'static str>{
-    let mask = 1<< index;
-    for piece in Piece::get_all(){
-        let piece_board = board.by_piece.get(piece);
-        if (piece_board.get() & mask) !=0{
-            return Ok(piece);
-        } 
-    }
-    Err("piece not found")
-}
