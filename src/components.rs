@@ -1,101 +1,150 @@
 use crate::{bitboard::Bitboard, board::Board, move_::Move, utils::compute_attack_squares, color::Color};
 
 macro_rules!  define_piece{
-    ($($name:ident),*) => {
-        #[derive(Copy,Clone,Debug)]
+    ($($name:ident
+        {
+            delta:[$($delta:expr),*],
+            chr:$chr:expr,
+            unicode:$unicode:expr,
+            step_only:$step_only:expr
+        }
+    ),*) => {
+        
+        #[derive(Copy, Clone, Debug, PartialEq)]
         pub enum Piece{
             $(
-                $name($name),
+                $name,
             )*
 
         }
-
+        
         impl Piece{
+            
+            fn delta(&self) -> &[i8] {
+                match self {
+                    $(
+                        Piece::$name => &[$($delta),*],
+                    )*
+                }
+            }
+            
+            
+            pub fn to_char(&self, color:Color) -> char {
+                match self {
+                    $(
+                        Piece::$name => if color==Color::white{
+                            $chr.to_ascii_uppercase()
+                        }else{
+                            $chr
+                        },
+                    )*
+                }
+            }
+
+            pub fn to_unicode(&self) -> char {
+                match self {
+                    $(
+                        Piece::$name => $unicode,
+                    )*
+                }
+            }
+             
+             
             pub fn compute_source(&self,board:&Board,mov:Move)->u8{
                 return match self {
                     $(
-                        Piece::$name(_)=> $name::compute_source(board,mov),
+                        Piece::$name=> Self::_compute_source(board,mov,self.delta(),$step_only),
                     )*
                 
                 };
             }
+            
         }
-
-        $(
-            #[derive(Copy,Clone,Debug)]
-            pub struct $name;
-        )*
+        
     };
 }
 
-define_piece!(Pawn, Knight, Bishop, Rook, Queen, King);
+define_piece!(
+    Pawn{
+        delta:[7,9],
+        chr:'p',
+        unicode:'♙',
+        step_only:true
+    }, 
+    Knight{
+        delta:[17, 15, 10, 6, -17, -15, -10, -6],
+        chr:'n',
+        unicode:'♘',
+        step_only:true
+    },
+    Bishop{
+        delta:[9, 7, -9, -7],
+        chr:'b',
+        unicode:'♗',
+        step_only:false
+    },
+    Rook{
+        delta:[1,8,-1,-8],
+        chr:'r',
+        unicode:'♖',
+        step_only:false
+    },
+    Queen{
+        delta:[1,8,7,9,-1,-8, -7, -9],
+        chr:'q',
+        unicode:'♕',
+        step_only:false
+    },
+    King{
+        delta:[9, 8, 7, 1, -9, -8, -7, -1],
+        chr:'k',
+        unicode:'♔',
+        step_only:true
+    }
+);
 
 
 impl Piece {
     pub const fn from_char(ch: char) -> Option<Piece> {
         match ch {
-            'P' | 'p' => Some(Piece::Pawn(Pawn)),
-            'N' | 'n' => Some(Piece::Knight(Knight)),
-            'B' | 'b' => Some(Piece::Bishop(Bishop)),
-            'R' | 'r' => Some(Piece::Rook(Rook)),
-            'Q' | 'q' => Some(Piece::Queen(Queen)),
-            'K' | 'k' => Some(Piece::King(King)),
+            'P' | 'p' => Some(Piece::Pawn),
+            'N' | 'n' => Some(Piece::Knight),
+            'B' | 'b' => Some(Piece::Bishop),
+            'R' | 'r' => Some(Piece::Rook),
+            'Q' | 'q' => Some(Piece::Queen),
+            'K' | 'k' => Some(Piece::King),
             _ => None,
-        }
-    }
-
-    pub fn to_char(&self,color:Color) -> char {
-        match &self {
-            Piece::Pawn(_) => Self::_pick(color, 'P', 'p'),
-            Piece::Knight(_) => Self::_pick(color, 'N', 'n'),
-            Piece::Bishop(_) => Self::_pick(color, 'B', 'b'),
-            Piece::Rook(_) => Self::_pick(color, 'R', 'r'),
-            Piece::Queen(_) => Self::_pick(color, 'Q', 'q'),
-            Piece::King(_) => Self::_pick(color, 'K', 'k'),
-        }
-        
-    }
-
-    pub fn to_unicode(&self) -> &str {
-        match &self {
-            Piece::Pawn(_) => "♙",
-            Piece::Knight(_) => "♘",
-            Piece::Bishop(_) => "♗",
-            Piece::Rook(_) => "♖",
-            Piece::Queen(_) => "♕",
-            Piece::King(_) => "♔",
-        }
-        
-    }
-
-    fn _pick(color:Color,upper:char,lower:char)->char{
-        if color==Color::white{
-            upper
-        }else{
-            lower
         }
     }
 
     pub fn get_all() ->Vec<Piece>{
         vec![
-            Piece::Pawn(Pawn),Piece::Knight(Knight),Piece::Bishop(Bishop),Piece::Rook(Rook),Piece::Queen(Queen),Piece::King(King),
+            Piece::Pawn,Piece::Knight,Piece::Bishop,Piece::Rook,Piece::Queen,Piece::King,
              
         ]
-    }
-    
-}
-
-
-pub trait PieceCompute {
-    fn compute_source(_:&Board,_:Move) -> u8{
-        todo!()
     }
 
     fn _compute_source(board:&Board,mov:Move, deltas:&[i8], step_only:bool) -> u8{
         let piece = mov.piece;
         let piece_bitboard = board.by_piece.get(piece);
         let color_bitboard = board.by_color.get(mov.color());
-        let attack_bitboard = compute_attack_squares(mov.get_target_index().unwrap() as i8, deltas, step_only);
+        let mut deltas = deltas;
+        if piece==Piece::Pawn {
+            deltas = if mov.color()==Color::white{
+                &[-7, -9]
+            }else{
+                &[7, 9]
+            };
+        }
+        
+        let attack_bitboard = if !mov.is_capture && mov.piece==Piece::Pawn {
+            let (file,_) = mov.get_target_file_rank();
+            let file_bitboard = file.get_bit_board();
+            file_bitboard.get()
+        }else{
+            compute_attack_squares(mov.get_target_index().unwrap() as i8, deltas, step_only)
+        };
+
         let source = piece_bitboard.get() & color_bitboard.get() & attack_bitboard;
         //println!("{}",Bitboard(attack_bitboard).printable());
         //println!("{}",piece_bitboard.printable());
@@ -104,66 +153,8 @@ pub trait PieceCompute {
         assert_eq!(source.count_ones(),1,"Bitboard \n{}", Bitboard(attack_bitboard).printable());
         return source.trailing_zeros() as u8
 
-    }
-    
-    
-    
+    }    
 }
-impl PieceCompute for Pawn{
-    fn compute_source(board:&Board,mov:Move) -> u8{
-        let piece_bitboard = board.by_piece.get(Piece::Pawn(Pawn));
-        let (file,_) = mov.get_target_file_rank();
-        let color_bitboard = board.by_color.get(mov.color());
-        
-        let file_bitboard = file.get_bit_board();
-
-        let attack_bitboard = if !mov.is_capture {
-            file_bitboard.get()
-        }else{
-            let delta = if mov.color()==Color::white{
-                [-7, -9]
-            }else{
-                [7, 9]
-            };
-
-            compute_attack_squares(mov.get_target_index().unwrap() as i8, &delta, true)
-        };
-
-        let source = piece_bitboard.get() & color_bitboard.get() & attack_bitboard;    
-        
-        assert_eq!(source.count_ones(),1,"Bitboard \n{}",Bitboard(attack_bitboard).printable());
-
-        return source.trailing_zeros() as u8
-    }
-}
-impl PieceCompute for Knight{
-    fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(board, mov, &[17, 15, 10, 6, -17, -15, -10, -6], true)
-    }
-}
-
-impl PieceCompute for Bishop{
-    fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(board, mov, &[9, 7, -9, -7], false)
-    }
-}
-
-impl PieceCompute for Rook{
-    fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(board, mov, &[1,8,-1,-8], false)
-    }
-}
-impl PieceCompute for Queen{
-    fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(board, mov, &[1,8,7,9,-1,-8, -7, -9], false)
-    }
-}
-impl PieceCompute for King{
-    fn compute_source(board:&Board,mov:Move) -> u8{
-        Self::_compute_source(board, mov, &[9, 8, 7, 1, -9, -8, -7, -1], true)
-    }
-}
-
 
 
 

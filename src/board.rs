@@ -1,6 +1,6 @@
 use core::fmt;
 
-use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, self, Color}, move_::Move, fen::generate, components::{Piece, King, Rook},};
+use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, move_::Move, fen::generate, components::Piece,};
 
 pub struct Board{
     pub by_piece: ByPiece,
@@ -18,8 +18,8 @@ impl Board {
     }
 
     pub fn apply_move(&mut self, mov : Move){
-        //println!("{:?}",target);
-        if mov.index < 25 {
+        
+        if mov.index < 24 {
             if mov.castling.is_some() {
                 self.apply_castling(mov)
             }else{
@@ -36,8 +36,8 @@ impl Board {
     fn apply_castling(&mut self, mov:Move){
         let color = mov.color();
         let ((ks,kt),(rs,rt)) = mov.castling.unwrap().compute_squares(color);
-        self.move_piece(ks, kt, color, Piece::King(King));
-        self.move_piece(rs, rt, color, Piece::Rook(Rook));
+        self.move_piece(ks, kt, color, Piece::King);
+        self.move_piece(rs, rt, color, Piece::Rook);
     }
 
     fn apply_normal_move(&mut self, mov:Move){
@@ -105,7 +105,7 @@ impl fmt::Display for Board {
                     }else{
                         "blue"
                     };
-                    color_str(self.get_piece_at_index(index).unwrap().to_unicode(), color) 
+                    color_str(&self.get_piece_at_index(index).unwrap().to_unicode().to_string(), color) 
                 }else {
                     color_str("◻", "gray") 
                 };

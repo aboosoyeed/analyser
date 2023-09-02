@@ -1,4 +1,4 @@
-use crate::{board::Board, color::Color, components::{Piece, Pawn}, bitboard::Bitboard};
+use crate::{board::Board, color::Color, components::Piece, bitboard::Bitboard};
 
 
 const FEN_SQUARE_INDICES: [usize; 64] = [
@@ -54,7 +54,7 @@ pub fn generate(board:&Board)->String{
 
 fn _get_color(board:&Board, mask:u64) ->Color{
     let white = board.by_color.white.get() & mask;
-    //let black: u64 = board.by_color.black.get() & mask;
+    
     if white==0{
         Color::black
     }else{
@@ -73,7 +73,7 @@ fn _get_piece(board:&Board, mask:u64) ->Result<Piece, &str>{
 
     println!("{}",Bitboard(mask).printable());
 
-    let piece_board = board.by_piece.get(Piece::Pawn(Pawn));
+    let piece_board = board.by_piece.get(Piece::Pawn);
 
     println!("{}",piece_board.printable());
 

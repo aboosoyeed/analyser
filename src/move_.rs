@@ -1,4 +1,4 @@
-use crate::{components::{Piece, Pawn, King, Rank, File}, utils::{square_to_index, square_to_file_rank}, color::{Color, self}};
+use crate::{components::{Piece,Rank, File}, utils::{square_to_index, square_to_file_rank}, color::Color};
 
 #[derive(Debug)]
 pub struct Move{
@@ -23,14 +23,14 @@ impl Move {
         
         
         if san.len()==2{
-            piece = Some(Piece::Pawn(Pawn))
+            piece = Some(Piece::Pawn)
         }else if san.contains("O-"){
             castling = Some(Castling::parse(&san));
-            piece = Some(Piece::King(King))
+            piece = Some(Piece::King)
         }else if san.contains("x"){
             is_capture = true;
             if first_char.is_ascii_lowercase(){
-                piece = Some(Piece::Pawn(Pawn))
+                piece = Some(Piece::Pawn)
             }
         }
 

@@ -23,24 +23,24 @@ impl ByPiece {
 
     pub fn get(&self, piece:Piece) ->Bitboard{
         match piece {
-            Piece::Pawn(_) => self.pawn,
-            Piece::Knight(_) => self.knight,
-            Piece::Bishop(_) => self.bishop,
-            Piece::Rook(_) => self.rook,
-            Piece::Queen(_) => self.queen,
-            Piece::King(_) => self.king,
+            Piece::Pawn => self.pawn,
+            Piece::Knight => self.knight,
+            Piece::Bishop => self.bishop,
+            Piece::Rook => self.rook,
+            Piece::Queen => self.queen,
+            Piece::King => self.king,
              
         }
     }
 
     pub fn get_mut(&mut self, piece:Piece) ->&mut Bitboard{
         match piece {
-            Piece::Pawn(_) => &mut self.pawn,
-            Piece::Knight(_) => &mut self.knight,
-            Piece::Bishop(_) => &mut self.bishop,
-            Piece::Rook(_) => &mut self.rook,
-            Piece::Queen(_) => &mut self.queen,
-            Piece::King(_) => &mut self.king,
+            Piece::Pawn => &mut self.pawn,
+            Piece::Knight => &mut self.knight,
+            Piece::Bishop => &mut self.bishop,
+            Piece::Rook => &mut self.rook,
+            Piece::Queen => &mut self.queen,
+            Piece::King => &mut self.king,
              
         }
     }
