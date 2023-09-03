@@ -1,4 +1,4 @@
-use crate::components::{Rank, File};
+use crate::{components::{Rank, File}, bitboard::Bitboard};
 
 /*
 pub fn index_to_file_rank(index: usize) -> Option<(char, usize)> {
@@ -13,7 +13,7 @@ pub fn index_to_file_rank(index: usize) -> Option<(char, usize)> {
 }
 */
 
-pub fn compute_attack_squares(init_pos:i8,deltas:&[i8], step_only:bool)->u64{
+pub fn compute_attack_squares(occupancy:Bitboard,init_pos:i8,deltas:&[i8], step_only:bool)->u64{
     
     let mut attack_bitboard: u64 = 0;
     for delta in deltas {
@@ -25,7 +25,7 @@ pub fn compute_attack_squares(init_pos:i8,deltas:&[i8], step_only:bool)->u64{
                 break;
             }else{
                 attack_bitboard |= 1 << pos;
-                if _is_index_on_edge(pos){
+                if _is_index_on_edge(pos) || _ray_obstructed(occupancy, step_only, pos) {
                     break
                 }
             }
@@ -42,6 +42,10 @@ pub fn compute_attack_squares(init_pos:i8,deltas:&[i8], step_only:bool)->u64{
 
 fn _is_index_out_of_board(index:i8)->bool{
     index < 0 || index>63
+}
+
+fn _ray_obstructed(occupancy:Bitboard, step_only:bool, pos:i8) ->bool{
+    !step_only && occupancy.get_bit((pos as i8).try_into().unwrap())
 }
 
 fn _is_index_on_edge(index:i8)->bool{

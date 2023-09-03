@@ -128,7 +128,9 @@ impl Piece {
         let piece = mov.piece;
         let piece_bitboard = board.by_piece.get(piece);
         let color_bitboard = board.by_color.get(mov.color());
+        let occupancy = board.occupied;
         let mut deltas = deltas;
+        
         if piece==Piece::Pawn {
             deltas = if mov.color()==Color::white{
                 &[-7, -9]
@@ -142,7 +144,7 @@ impl Piece {
             let file_bitboard = file.get_bit_board();
             file_bitboard.get()
         }else{
-            compute_attack_squares(mov.get_target_index().unwrap() as i8, deltas, step_only)
+            compute_attack_squares(occupancy,mov.get_target_index().unwrap() as i8, deltas, step_only)
         };
 
         let source = piece_bitboard.get() & color_bitboard.get() & attack_bitboard;
@@ -150,7 +152,7 @@ impl Piece {
         //println!("{}",piece_bitboard.printable());
         //println!("{}",color_bitboard.printable());
         
-        assert_eq!(source.count_ones(),1,"Bitboard \n{}", Bitboard(attack_bitboard).printable());
+        assert_eq!(source.count_ones(),1,"Mov : {} \n{}",mov.index, Bitboard(attack_bitboard).printable());
         return source.trailing_zeros() as u8
 
     }    

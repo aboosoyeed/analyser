@@ -19,7 +19,7 @@ impl Board {
 
     pub fn apply_move(&mut self, mov : Move){
         
-        if mov.index < 24 {
+        if mov.index < 39 {
             if mov.castling.is_some() {
                 self.apply_castling(mov)
             }else{
