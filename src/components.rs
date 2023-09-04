@@ -139,20 +139,31 @@ impl Piece {
             };
         }
         
-        let attack_bitboard = if !mov.is_capture && mov.piece==Piece::Pawn {
+        let mut attack_bitboard = if !mov.is_capture && mov.piece==Piece::Pawn {
             let (file,_) = mov.get_target_file_rank();
             let file_bitboard = file.get_bit_board();
             file_bitboard.get()
         }else{
             compute_attack_squares(occupancy,mov.get_target_index().unwrap() as i8, deltas, step_only)
         };
+        let s = attack_bitboard.clone() ;
+        if mov.source.0.is_some(){
+            attack_bitboard = attack_bitboard & mov.source.0.unwrap().get_bit_board().get()
+        }else if mov.source.1.is_some(){
+            attack_bitboard = attack_bitboard & mov.source.1.unwrap().get_bit_board().get()    
+        }
 
         let source = piece_bitboard.get() & color_bitboard.get() & attack_bitboard;
-        //println!("{}",Bitboard(attack_bitboard).printable());
-        //println!("{}",piece_bitboard.printable());
-        //println!("{}",color_bitboard.printable());
         
-        assert_eq!(source.count_ones(),1,"Mov : {} \n{}",mov.index, Bitboard(attack_bitboard).printable());
+        if mov.index==54{
+            println!("{}",mov.source.1.unwrap().get_bit_board().printable());
+            println!("{}",Bitboard(s).printable());
+            //println!("{}",piece_bitboard.printable());
+            //println!("{}",color_bitboard.printable());
+
+        }
+        
+        assert_eq!(source.count_ones(),1,"Mov : {}.{} \n{}",mov.index,mov.san, Bitboard(attack_bitboard).printable());
         return source.trailing_zeros() as u8
 
     }    

@@ -2,13 +2,13 @@ use crate::{components::{Piece,Rank, File}, utils::{square_to_index, square_to_f
 
 #[derive(Debug)]
 pub struct Move{
-    san: String,
+    pub san: String,
     pub index: u16,
     pub piece: Piece,
     pub is_capture: bool,
     pub castling: Option<Castling>,
-    target_square: Option<String> // will be None if its a castling 
-
+    target_square: Option<String>, // will be None if its a castling 
+    pub source:(Option<File>,Option<Rank>)
 }
 
 impl Move {
@@ -18,8 +18,8 @@ impl Move {
         let mut piece = Piece::from_char( first_char );
         let mut is_capture = false;
         let mut castling = None;
-
-            
+        let mut source = (None,None);
+                        
         
         
         if san.len()==2{
@@ -32,7 +32,15 @@ impl Move {
             if first_char.is_ascii_lowercase(){
                 piece = Some(Piece::Pawn)
             }
+        }else if san.len()>3 { // if its none of the above it surely deals with ambiguity
+            let ch = san.chars().nth(1);
+            if let Some(f) = File::from_char(ch.unwrap()){
+                source.0 = Some(f);
+            }else{
+                source.1 = Rank::from_char(ch.unwrap())
+            }
         }
+
 
         let target_square = if castling.is_some(){
             None
@@ -44,7 +52,7 @@ impl Move {
         
 
         assert!( piece.is_some(), "piece could not be destructured {}", san);
-        Move { san, index, piece: piece.unwrap(), is_capture , castling, target_square}
+        Move { san, index, piece: piece.unwrap(), is_capture , castling, target_square, source}
     }
 
     pub fn get_target_index(&self) -> Option<u8> {
@@ -96,4 +104,16 @@ impl Castling {
         }
     }
 
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::move_::Move;
+
+    #[test]
+    fn ambiguity() {
+        let mov = Move::new("R7a2".to_string(), 0);
+        assert!(mov.source.0.is_none());
+        assert!(mov.source.1.is_some())
+    }
 }
