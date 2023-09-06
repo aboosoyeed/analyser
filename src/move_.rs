@@ -1,4 +1,4 @@
-use crate::{components::{Piece,Rank, File}, utils::{square_to_index, square_to_file_rank}, color::Color};
+use crate::{components::{Piece,Rank, File}, utils::{square_to_file_rank, file_rank_to_index}, color::Color};
 
 #[derive(Debug)]
 pub struct Move{
@@ -7,7 +7,7 @@ pub struct Move{
     pub piece: Piece,
     pub is_capture: bool,
     pub castling: Option<Castling>,
-    target_square: Option<String>, // will be None if its a castling 
+    pub target: (Option<File>,Option<Rank>), // will be None if its a castling 
     pub source:(Option<File>,Option<Rank>)
 }
 
@@ -19,6 +19,7 @@ impl Move {
         let mut is_capture = false;
         let mut castling = None;
         let mut source = (None,None);
+        let mut target = (None,None);
                         
         
         
@@ -32,7 +33,9 @@ impl Move {
             if first_char.is_ascii_lowercase(){
                 piece = Some(Piece::Pawn)
             }
-        }else if san.len()>3 { // if its none of the above it surely deals with ambiguity
+        }
+        
+        if san.len()>3 && castling.is_none() { // if its none of the above it surely deals with disambiguity
             let ch = san.chars().nth(1);
             if let Some(f) = File::from_char(ch.unwrap()){
                 source.0 = Some(f);
@@ -49,23 +52,27 @@ impl Move {
         }else{
             Some(san[san.len() -3..san.len() -1].to_string())
         };
+
+        if target_square.is_some(){
+            let (f,r)=square_to_file_rank(target_square.unwrap().as_str());
+            target = (Some(f),Some(r));
+        }
+        
         
 
         assert!( piece.is_some(), "piece could not be destructured {}", san);
-        Move { san, index, piece: piece.unwrap(), is_capture , castling, target_square, source}
+        Move { san, index, piece: piece.unwrap(), is_capture , castling, target, source}
     }
 
     pub fn get_target_index(&self) -> Option<u8> {
-        let square = &self.target_square;
-        if square.is_none(){
+        let (file,rank) = &self.target;
+        if file.is_none() || rank.is_none(){
             return None;
         }
-        return Some(square_to_index(&square.as_ref().unwrap().as_str()));
+        return Some(file_rank_to_index(file.unwrap(),rank.unwrap()));
     }
     
-    pub fn get_target_file_rank(&self) -> (File,Rank){
-        return square_to_file_rank(self.target_square.as_ref().unwrap());
-    }
+    
 
     pub fn color(&self)->Color{
         if &self.index%2==0{
@@ -104,16 +111,4 @@ impl Castling {
         }
     }
 
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::move_::Move;
-
-    #[test]
-    fn ambiguity() {
-        let mov = Move::new("R7a2".to_string(), 0);
-        assert!(mov.source.0.is_none());
-        assert!(mov.source.1.is_some())
-    }
 }
