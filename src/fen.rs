@@ -56,9 +56,9 @@ fn _get_color(board:&Board, mask:u64) ->Color{
     let white = board.by_color.white.get() & mask;
     
     if white==0{
-        Color::black
+        Color::Black
     }else{
-        Color::white
+        Color::White
     }
 
 }
@@ -70,15 +70,6 @@ fn _get_piece(board:&Board, mask:u64) ->Result<Piece, &str>{
             return Ok(piece);
         } 
     }
-
-    println!("{}",Bitboard(mask).printable());
-
-    let piece_board = board.by_piece.get(Piece::Pawn);
-
-    println!("{}",piece_board.printable());
-
-
-    println!("{}", board);
 
     Err("Value not found")
     

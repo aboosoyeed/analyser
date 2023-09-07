@@ -4,7 +4,7 @@ mod pgn;
 mod pgn_header;
 mod board;
 mod role;
-mod color;
+pub mod color;
 mod components;
 mod utils;
 pub mod move_;

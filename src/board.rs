@@ -19,17 +19,10 @@ impl Board {
 
     pub fn apply_move(&mut self, mov : Move){
         
-        if mov.index < 56 {
-            if mov.castling.is_some() {
-                self.apply_castling(mov)
-            }else{
-                self.apply_normal_move(mov)
-            }
-            
-            
-            //println!("{}",piece_board.printable())    
-
-            //println!("{}",self.generate_fen())
+        if mov.castling.is_some() {
+            self.apply_castling(mov)
+        }else{
+            self.apply_normal_move(mov)
         }
     }
 

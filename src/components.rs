@@ -32,7 +32,7 @@ macro_rules!  define_piece{
             pub fn to_char(&self, color:Color) -> char {
                 match self {
                     $(
-                        Piece::$name => if color==Color::white{
+                        Piece::$name => if color==Color::White{
                             $chr.to_ascii_uppercase()
                         }else{
                             $chr
@@ -132,7 +132,7 @@ impl Piece {
         let mut deltas = deltas;
         
         if piece==Piece::Pawn {
-            deltas = if mov.color()==Color::white{
+            deltas = if mov.color()==Color::White{
                 &[-7, -9]
             }else{
                 &[7, 9]

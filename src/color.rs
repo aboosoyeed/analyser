@@ -2,16 +2,16 @@ use crate::bitboard::Bitboard;
 
 #[derive(Clone, Copy,PartialEq)]
 pub enum  Color{
-    white,
-    black
+    White,
+    Black
 }
 
 impl Color {
     pub fn get_opposite(&self)->Color{
-        if *self==Color::white{
-            Color::black
+        if *self==Color::White{
+            Color::Black
         }else{
-            Color::white
+            Color::White
         }
     }
 }
@@ -32,15 +32,15 @@ impl ByColor {
 
     pub fn get(&self,color:Color)->Bitboard{
         match color {
-            Color::white => self.white,
-            Color::black => self.black,
+            Color::White => self.white,
+            Color::Black => self.black,
         }
     }
 
     pub fn get_mut(&mut self, color:Color) -> &mut Bitboard {
         match color {
-            Color::white => &mut self.white,
-            Color::black => &mut self.black,
+            Color::White => &mut self.white,
+            Color::Black => &mut self.black,
         }
     }
 }

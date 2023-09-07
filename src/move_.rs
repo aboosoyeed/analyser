@@ -1,4 +1,4 @@
-use crate::{components::{Piece,Rank, File}, utils::{square_to_file_rank, file_rank_to_index}, color::Color};
+use crate::{components::{Piece,Rank, File}, utils::{file_rank_to_index, is_piece}, color::Color};
 
 #[derive(Debug)]
 pub struct Move{
@@ -13,51 +13,49 @@ pub struct Move{
 
 impl Move {
     pub fn new(san:String, index:u16)->Move{
-        let first_char = san.chars().next().unwrap();
-        let last_char = san.chars().last().unwrap();
-        let mut piece = Piece::from_char( first_char );
+        
+        let mut piece = Some(Piece::Pawn);
         let mut is_capture = false;
         let mut castling = None;
         let mut source = (None,None);
         let mut target = (None,None);
                         
+        let san_chars = san.chars();
+        let mut positions:Vec<char> = vec![];
         
-        
-        if san.len()==2{
-            piece = Some(Piece::Pawn)
-        }else if san.contains("O-"){
-            castling = Some(Castling::parse(&san));
-            piece = Some(Piece::King)
-        }else if san.contains("x"){
-            is_capture = true;
-            if first_char.is_ascii_lowercase(){
-                piece = Some(Piece::Pawn)
+        for ch in san_chars{
+            if ch=='O'{
+                castling = Some(Castling::parse(&san));
+                piece = Some(Piece::King)
             }
-        }
-        
-        if san.len()>3 && castling.is_none() { // if its none of the above it surely deals with disambiguity
-            let ch = san.chars().nth(1);
-            if let Some(f) = File::from_char(ch.unwrap()){
-                source.0 = Some(f);
+            if ch =='x' {
+                is_capture = true;
+            }
+            if (ch>='a' && ch<='h') || (ch>='1' && ch<='8') {
+                positions.push(ch);
+            }
+
+            if is_piece(ch){
+                piece = Piece::from_char(ch);
+            }
+
+        } 
+
+        if positions.len()>0 {
+            let target_start_index = if positions.len()==3{
+                if let Some(f) = File::from_char(positions[0]){
+                    source.0 = Some(f);
+                }else{
+                    source.1 = Rank::from_char(positions[0])
+                }
+                1
             }else{
-                source.1 = Rank::from_char(ch.unwrap())
-            }
+                0
+            };
+
+            target.0 = File::from_char(positions[target_start_index]);
+            target.1 = Rank::from_char(positions[target_start_index+1])
         }
-
-
-        let target_square = if castling.is_some(){
-            None
-        }else if last_char.is_numeric(){
-            Some(san[san.len() -2..].to_string())
-        }else{
-            Some(san[san.len() -3..san.len() -1].to_string())
-        };
-
-        if target_square.is_some(){
-            let (f,r)=square_to_file_rank(target_square.unwrap().as_str());
-            target = (Some(f),Some(r));
-        }
-        
         
 
         assert!( piece.is_some(), "piece could not be destructured {}", san);
@@ -76,9 +74,9 @@ impl Move {
 
     pub fn color(&self)->Color{
         if &self.index%2==0{
-            Color::white
+            Color::White
         }else{
-            Color::black
+            Color::Black
         }
     }
     
@@ -87,24 +85,24 @@ impl Move {
 
 #[derive(Debug, PartialEq)]
 pub enum Castling{
-    queen,
-    king
+    Queen,
+    King
 }
 impl Castling {
     fn parse(san:&str) ->Castling{
         if san=="O-O"{
-            Castling::king
+            Castling::King
         }else {
-            Castling::queen
+            Castling::Queen
         }
     }
 
     pub fn compute_squares(&self,color:Color) -> ((u8,u8),(u8,u8)){
-        if self==&Castling::king && color==Color::white {
+        if self==&Castling::King && color==Color::White {
             ((4,6),(7,5))
-        }else if self==&Castling::queen && color==Color::white {
+        }else if self==&Castling::Queen && color==Color::White {
             ((4,2),(0,3))
-        }else if self==&Castling::king && color==Color::black{
+        }else if self==&Castling::King && color==Color::Black{
             ((60,62),(63,61))
         }else{
             ((60,58),(56,59))
