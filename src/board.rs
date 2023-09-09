@@ -61,8 +61,8 @@ impl Board {
         piece_board.toggle(source,target);
     }
 
-    pub fn generate_fen(&self)->String{
-        generate(self)
+    pub fn generate_fen(&self, last_move:Move)->String{
+        generate(self, last_move)
     }
 
     

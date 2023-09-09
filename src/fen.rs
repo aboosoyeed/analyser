@@ -1,4 +1,4 @@
-use crate::{board::Board, color::Color, components::Piece};
+use crate::{board::Board, color::Color, components::Piece, r#move::Move};
 
 
 const FEN_SQUARE_INDICES: [usize; 64] = [
@@ -13,9 +13,16 @@ const FEN_SQUARE_INDICES: [usize; 64] = [
 ];
 
 
-pub fn generate(board:&Board)->String{
+pub fn generate(board:&Board, last_move :Move)->String{
+    let pp = piece_placement(board);
+    let fen = format!("{} {}",pp, last_move.color().get_opposite());
+   
+    fen
+}
+
+fn piece_placement(board:&Board) ->String{
     let occupied =board.occupied.get(); 
-    let mut fen = String::from("");
+    let mut piece_placement = String::from("");
     let mut count_empty=0;
     for i in FEN_SQUARE_INDICES{
         let mask = 1<< i;
@@ -25,22 +32,22 @@ pub fn generate(board:&Board)->String{
             count_empty +=1;    
         }else{
             if count_empty>0{
-                fen.push_str(count_empty.to_string().as_str());
+                piece_placement.push_str(count_empty.to_string().as_str());
             }
             let color = _get_color(board, mask);
             let piece = _get_piece(board, mask);
             let piece_char = piece.unwrap().to_char(color);
-            fen.push(piece_char);
+            piece_placement.push(piece_char);
             
             count_empty = 0
         }
 
         if (i+1)%8==0{
             if count_empty>0{
-                fen.push_str(count_empty.to_string().as_str());
+                piece_placement.push_str(count_empty.to_string().as_str());
             }
             if i!=7 {
-                fen.push('/'); // we dont want to put for the last index
+                piece_placement.push('/'); // we dont want to put for the last index
             }
             
             count_empty = 0
@@ -48,8 +55,7 @@ pub fn generate(board:&Board)->String{
 
     }
 
-    fen
-    
+    piece_placement
 }
 
 fn _get_color(board:&Board, mask:u64) ->Color{

@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::bitboard::Bitboard;
 
 #[derive(Clone, Copy,PartialEq)]
@@ -12,6 +14,15 @@ impl Color {
             Color::Black
         }else{
             Color::White
+        }
+    }
+}
+
+impl fmt::Display for Color {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Color::White => write!(f, "w"),
+            Color::Black => write!(f, "b"),
         }
     }
 }
@@ -44,3 +55,4 @@ impl ByColor {
         }
     }
 }
+

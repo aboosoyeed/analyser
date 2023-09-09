@@ -1,6 +1,6 @@
 use crate::{components::{Piece,Rank, File}, utils::{file_rank_to_index, is_piece}, color::Color};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Move{
     pub san: String,
     pub index: u16,
@@ -83,7 +83,7 @@ impl Move {
 
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Castling{
     Queen,
     King

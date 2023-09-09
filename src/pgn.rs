@@ -25,8 +25,9 @@ impl PGN{
         let moves = pgn.moves;
         let mut fens:Vec<String> =Vec::new();
         for mov in moves{
+            let cloned_move = mov.clone();
             board.apply_move(mov);
-            let fen = board.generate_fen();
+            let fen = board.generate_fen(cloned_move);
             fens.push(fen);
         }
         fens
