@@ -1,4 +1,4 @@
-use crate::{board::Board, color::Color, components::Piece, bitboard::Bitboard};
+use crate::{board::Board, color::Color, components::Piece};
 
 
 const FEN_SQUARE_INDICES: [usize; 64] = [

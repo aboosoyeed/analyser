@@ -1,6 +1,6 @@
 use core::fmt;
 
-use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, move_::Move, fen::generate, components::Piece,};
+use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::Move, fen::generate, components::Piece,};
 
 pub struct Board{
     pub by_piece: ByPiece,

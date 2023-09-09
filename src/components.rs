@@ -1,4 +1,4 @@
-use crate::{bitboard::Bitboard, board::Board, move_::Move, utils::compute_attack_squares, color::Color};
+use crate::{bitboard::Bitboard, board::Board, r#move::Move, utils::compute_attack_squares, color::Color};
 
 macro_rules!  define_piece{
     ($($name:ident

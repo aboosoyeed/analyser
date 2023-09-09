@@ -1,4 +1,4 @@
-use analyzer::move_::Move;
+use analyzer::r#move::Move;
 use analyzer::color::Color;
 
 macro_rules! gen_move_tests {

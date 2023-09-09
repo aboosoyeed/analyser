@@ -1,7 +1,7 @@
 
 use std::fs;
 
-use crate::{pgn_header::PgnHeaders, move_::Move};
+use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move};
 
 
 pub struct PGN{
@@ -11,19 +11,25 @@ pub struct PGN{
 }
 
 impl PGN{
-    pub fn new()-> PGN{
-        PGN{ headers: PgnHeaders::new() , moves: Vec::new(), _move_counter:0}
-    }
-
-    pub fn parse(&mut self,path:&str){
+    
+    pub fn parse(path:&str) -> Vec<String>{
+        let mut board = Board::init();
+    
+        let mut pgn = PGN{ headers: PgnHeaders::new() , moves: Vec::new(), _move_counter:0};
         let contents = fs::read_to_string(path)
         .expect("Should have been able to read the file");
         
         for line in contents.lines(){
-            self.process_line(line);   
+            pgn.process_line(line);   
         }
-
-
+        let moves = pgn.moves;
+        let mut fens:Vec<String> =Vec::new();
+        for mov in moves{
+            board.apply_move(mov);
+            let fen = board.generate_fen();
+            fens.push(fen);
+        }
+        fens
     }
 
     fn process_line(&mut self, line:&str){
