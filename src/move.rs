@@ -83,7 +83,7 @@ impl Move {
 
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone,Copy)]
 pub enum Castling{
     Queen,
     King
@@ -108,5 +108,7 @@ impl Castling {
             ((60,58),(56,59))
         }
     }
+
+    
 
 }

@@ -19,8 +19,8 @@ fn main() {
     
     let fens = PGN::parse("./test.pgn");
 
-    for f in fens{
-        println!("{}",f)
+    for (i,f) in fens.iter().enumerate(){
+        println!("{}. {}",(i+1),f)
     }    
     
 }

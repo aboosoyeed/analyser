@@ -15,7 +15,7 @@ const FEN_SQUARE_INDICES: [usize; 64] = [
 
 pub fn generate(board:&Board, last_move :Move)->String{
     let pp = piece_placement(board);
-    let fen = format!("{} {}",pp, last_move.color().get_opposite());
+    let fen = format!("{} {} {}",pp, last_move.color().get_opposite(), extract_castling_rights(board));
    
     fen
 }
@@ -56,6 +56,21 @@ fn piece_placement(board:&Board) ->String{
     }
 
     piece_placement
+}
+
+
+pub fn extract_castling_rights(board:&Board) -> String {
+    let rights = ['K', 'Q', 'k', 'q'];
+    let mut castling_fragment = String::new();
+
+    for (bit, right) in (0..4).rev().zip(rights.iter()) {
+        if (board.castling_rights & (1 << bit)) != 0 {
+            castling_fragment.push(*right);
+        }
+    }
+
+    castling_fragment.push(if castling_fragment.is_empty() { '-' } else { '\0' });
+    castling_fragment
 }
 
 fn _get_color(board:&Board, mask:u64) ->Color{

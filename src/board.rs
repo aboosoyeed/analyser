@@ -1,11 +1,13 @@
 use core::fmt;
 
-use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::Move, fen::generate, components::Piece,};
+use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::{Move, Castling}, fen::generate, components::Piece,};
 
 pub struct Board{
     pub by_piece: ByPiece,
     pub by_color: ByColor,
     pub occupied: Bitboard,
+    pub castling_rights:u8
+
 }
 
 impl Board {
@@ -13,7 +15,8 @@ impl Board {
         Board { 
             by_piece: ByPiece::init(), 
             by_color: ByColor::init(), 
-            occupied: Bitboard(0xffff_0000_0000_ffff) 
+            occupied: Bitboard(0xffff_0000_0000_ffff),
+            castling_rights: 0b_1111 
         }
     }
 
@@ -28,9 +31,25 @@ impl Board {
 
     fn apply_castling(&mut self, mov:Move){
         let color = mov.color();
-        let ((ks,kt),(rs,rt)) = mov.castling.unwrap().compute_squares(color);
+        let castling = mov.castling ;
+        let ((ks,kt),(rs,rt)) = castling.unwrap().compute_squares(color);
         self.move_piece(ks, kt, color, Piece::King);
         self.move_piece(rs, rt, color, Piece::Rook);
+        
+        // remove all castling rights for the side
+        self.remove_castling_rights(color, true);
+        self.remove_castling_rights(color, false);
+    }
+
+    fn remove_castling_rights(&mut self, color:Color,is_king_side:bool){
+        let mask = match (color, is_king_side) {
+            (Color::White, true) => 0b_0111,
+            (Color::White, false) => 0b_1011,
+            (Color::Black, true) => 0b_1101,
+            (Color::Black, false) => 0b_1110,
+        };
+    
+        self.castling_rights = self.castling_rights & mask;
     }
 
     fn apply_normal_move(&mut self, mov:Move){
@@ -47,6 +66,19 @@ impl Board {
             let opp_piece_board = &mut self.by_piece.get_mut(opp_piece.unwrap());
             opp_piece_board.clear_bit(target.unwrap())
         }
+
+        if piece==Piece::Rook && (source==0 || source==7 || source==56 || source==63  ){
+
+            self.remove_castling_rights(color, source==7 || source==63);
+                
+        }
+
+        if piece==Piece::King && (source==4 || source==60){
+            // remove all castling rights for the side
+            self.remove_castling_rights(color, true);
+            self.remove_castling_rights(color, false);
+        }
+
         self.move_piece(source, target.unwrap(), color, piece);
         
     }
