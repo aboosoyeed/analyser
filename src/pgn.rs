@@ -1,7 +1,9 @@
 
-use std::fs;
+use std::ops::Deref;
 
-use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::index_to_file_rank};
+use regex::Regex;
+
+use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::{index_to_file_rank, get_header_regex}};
 
 
 pub struct PGN{
@@ -12,16 +14,13 @@ pub struct PGN{
 
 impl PGN{
     
-    pub fn parse(path:&str) -> Vec<String>{
+    pub fn parse(contents:String) -> Vec<String>{
         let mut board = Board::init();
     
         let mut pgn = PGN{ headers: PgnHeaders::new() , moves: Vec::new(), _move_counter:0};
-        let contents = fs::read_to_string(path)
-        .expect("Should have been able to read the file");
+        pgn.extract_headers(contents.clone());
+        pgn.extract_moves(contents);
         
-        for line in contents.lines(){
-            pgn.process_line(line);   
-        }
         let moves = pgn.moves;
         let mut fens:Vec<String> =Vec::new();
         for mut mov in moves{
@@ -37,38 +36,46 @@ impl PGN{
 
         }
         fens
+         
     }
 
-    fn process_line(&mut self, line:&str){
-        let mut move_string = String::from("");
-        match line.get(0..1) {
-            None => (),
-            Some("[") => self.extract_meta_from_line(line.get(1..line.len()-1).unwrap()),
-            Some(&_) => move_string += line
-    
-        };
-        
-        self.extract_moves(&move_string);
-    }
-    
-    fn extract_moves(&mut self, move_str:&str){
-        
-        for ( _,token) in move_str.split(" ").enumerate() {
-            if token.len()>0 && token.get(token.len()-1..) != Some(".") {
-                if token == "1-0" || token == "0-1" || token =="0-0"{
-                    continue;        
-                }
-
-                self.moves.push(
-                    Move::new(String::from(token), self._move_counter)
-                );
-                self._move_counter+=1;
-            }
+    fn extract_headers(&mut self, contents:String){
+        let header_pattern = get_header_regex();
+        let headers:Vec<&str> = header_pattern.find_iter(&contents).map(|m| m.as_str()).collect();
+        for line in headers{
+            self._extract_meta_from_line(line.get(1..line.len()-1).unwrap())
         }
-        
+
     }
 
-    fn extract_meta_from_line(&mut self, line:&str){
+    fn extract_moves(&mut self, contents:String){
+        let header_pattern = get_header_regex();
+        let move_list = header_pattern.replace_all(&contents, "");
+        let move_list = move_list.trim();
+        let move_list = move_list.replace("\n", "");
+        
+        let alt_moves_pattern = Regex::new(r"(\(.*\))").unwrap();
+        let move_list = alt_moves_pattern.replace_all(&move_list, "").to_string();    
+        for ( _,token) in move_list.split(" ").enumerate() {
+            if token.len()==0 { // has length
+                continue;
+            }
+            if token.get(token.len()-1..) == Some("."){ //is a counter
+                continue;
+            }
+            if token == "1-0" || token == "0-1" || token =="0-0" || token=="*"{ //end
+                continue;        
+            }
+            self.moves.push(
+                Move::new(String::from(token), self._move_counter)
+            );
+            self._move_counter+=1;
+        }
+    }
+
+    
+    
+    fn _extract_meta_from_line(&mut self, line:&str){
         let mut key  = String::from("");
         let mut val  = String::from("");
         
@@ -103,8 +110,6 @@ impl PGN{
         }
     }
 
-    pub fn print_headers(&self){
-        self.headers.print_headers();
-    }
+    
 
 }

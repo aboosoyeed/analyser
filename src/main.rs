@@ -15,11 +15,14 @@ mod engine{
     pub mod engine;
 }
 use engine::engine::Engine;
+use std::fs;
+
 
 fn main() {
-
+    let contents = fs::read_to_string("./tests/pgn/2.pgn")
+        .expect("Should have been able to read the file");
     let mut engine = Engine::new();
-    let fens = PGN::parse("./test.pgn");
+    let fens = PGN::parse(contents);
 
     for (i,f) in fens.iter().enumerate(){
         //println!("{}. {}",(i+1),f);

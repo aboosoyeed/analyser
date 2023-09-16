@@ -1,3 +1,5 @@
+use regex::Regex;
+
 use crate::{components::{Rank, File}, bitboard::Bitboard};
 
 pub fn compute_attack_squares(occupancy:Bitboard,init_pos:i8,deltas:&[i8], step_only:bool)->u64{
@@ -52,5 +54,9 @@ pub fn is_piece(c: char) -> bool {
         'K' | 'N' | 'B' | 'Q' | 'R' => true,
         _ => false,
     }
+}
+
+pub fn get_header_regex()->Regex{
+     Regex::new(r"(\[.*?\])").unwrap()
 }
 
