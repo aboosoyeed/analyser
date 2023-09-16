@@ -1,4 +1,4 @@
-use crate::{board::Board, color::Color, components::Piece, r#move::Move};
+use crate::{board::Board, color::Color, components::{Piece, File}, r#move::Move};
 
 
 const FEN_SQUARE_INDICES: [usize; 64] = [
@@ -15,7 +15,12 @@ const FEN_SQUARE_INDICES: [usize; 64] = [
 
 pub fn generate(board:&Board, last_move :Move)->String{
     let pp = piece_placement(board);
-    let fen = format!("{} {} {}",pp, last_move.color().get_opposite(), extract_castling_rights(board));
+    let fen = format!("{} {} {} {}",
+        pp, 
+        last_move.color().get_opposite(), 
+        extract_castling_rights(board), 
+        extract_en_passant(last_move)
+    );
    
     fen
 }
@@ -56,6 +61,26 @@ fn piece_placement(board:&Board) ->String{
     }
 
     piece_placement
+}
+
+fn extract_en_passant(mov :Move)-> String{
+    if mov.piece==Piece::Pawn{
+        let (file,source_rank) = mov.source;
+        let (_,target_rank) = mov.target;
+        let diff = target_rank.unwrap() - source_rank.unwrap();
+        
+        if diff==2{
+            let mut s = String::from("");
+            s.push(file.unwrap().to_char());
+            if mov.color()==Color::White{
+                s.push('3')
+            }else {
+                s.push('6')
+            }
+            return s;
+        }
+    }
+    String::from("-")
 }
 
 

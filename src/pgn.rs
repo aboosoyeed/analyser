@@ -1,7 +1,7 @@
 
 use std::fs;
 
-use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move};
+use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::index_to_file_rank};
 
 
 pub struct PGN{
@@ -24,11 +24,17 @@ impl PGN{
         }
         let moves = pgn.moves;
         let mut fens:Vec<String> =Vec::new();
-        for mov in moves{
+        for mut mov in moves{
             let cloned_move = mov.clone();
-            board.apply_move(mov);
-            let fen = board.generate_fen(cloned_move);
+            let source = board.apply_move(cloned_move);
+            
+            if source.is_some() {
+                //let (file,rank) =index_to_file_rank(source.unwrap());
+                mov.source = index_to_file_rank(source.unwrap());
+            }
+            let fen = board.generate_fen(mov);
             fens.push(fen);
+
         }
         fens
     }

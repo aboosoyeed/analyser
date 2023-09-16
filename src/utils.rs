@@ -36,6 +36,12 @@ fn _ray_obstructed(occupancy:Bitboard, step_only:bool, pos:i8) ->bool{
 }
 
 
+pub fn index_to_file_rank(index: u8) -> (Option<File>, Option<Rank>) {
+    let file = ('a' as u8 + (index % 8) as u8) as char;
+    let rank = (index / 8)+1;
+    let rank_char = rank.to_string().chars().next().unwrap();
+    (File::from_char(file),Rank::from_char( rank_char))
+}
 
 pub fn file_rank_to_index(file:File,rank:Rank)->u8{
     ((rank as u8) ) * 8 + (file as u8)

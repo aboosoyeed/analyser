@@ -1,3 +1,5 @@
+use std::ops::Sub;
+
 use crate::{bitboard::Bitboard, board::Board, r#move::Move, utils::compute_attack_squares, color::Color};
 
 macro_rules!  define_piece{
@@ -155,14 +157,7 @@ impl Piece {
 
         let source = piece_bitboard.get() & color_bitboard.get() & attack_bitboard;
         
-        /*
-        if mov.index==52{
-            println!("{}",color_bitboard.printable());
-            println!("{}",piece_bitboard.printable());
-            println!("{:?}",mov.source);
-
-        }
-        */
+        
         
         assert_eq!(source.count_ones(),1,"Mov : {}.{} \n{}",mov.index,mov.san, Bitboard(attack_bitboard).printable());
         return source.trailing_zeros() as u8
@@ -204,6 +199,19 @@ impl File {
             'H' | 'h' => Some(File::H),
             _ => None,
         }
+    }
+
+    pub const fn to_char(&self) -> char {
+        match self {
+            File::A =>'a',
+            File::B =>'b',
+            File::C =>'c',
+            File::D =>'d',
+            File::E =>'e',
+            File::F =>'f',
+            File::G =>'g',
+            File::H =>'h'
+        }
     }   
 
 }
@@ -240,4 +248,15 @@ impl Rank {
         }
     }   
 
+}
+
+impl Sub for Rank {
+    type Output = usize;
+
+    fn sub(self, other: Rank) -> usize {
+        let self_value = self as usize;
+        let other_value = other as usize;
+        self_value.abs_diff(other_value)
+        
+    }
 }

@@ -1,6 +1,6 @@
 use core::fmt;
 
-use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::{Move, Castling}, fen::generate, components::Piece,};
+use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::Move, fen::generate, components::Piece,};
 
 pub struct Board{
     pub by_piece: ByPiece,
@@ -20,13 +20,14 @@ impl Board {
         }
     }
 
-    pub fn apply_move(&mut self, mov : Move){
-        
+    pub fn apply_move(&mut self, mov : Move)->Option<u8>{
+        let mut source:Option<u8> = None;
         if mov.castling.is_some() {
             self.apply_castling(mov)
         }else{
-            self.apply_normal_move(mov)
+            source = Some(self.apply_normal_move(mov));
         }
+        source
     }
 
     fn apply_castling(&mut self, mov:Move){
@@ -52,7 +53,7 @@ impl Board {
         self.castling_rights = self.castling_rights & mask;
     }
 
-    fn apply_normal_move(&mut self, mov:Move){
+    fn apply_normal_move(&mut self, mov:Move) ->u8{
         let target = mov.get_target_index();
         let color = mov.color();
         let piece = mov.piece;
@@ -80,6 +81,7 @@ impl Board {
         }
 
         self.move_piece(source, target.unwrap(), color, piece);
+        source
         
     }
     
