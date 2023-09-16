@@ -1,4 +1,4 @@
-use crate::{board::Board, color::Color, components::{Piece, File}, r#move::Move};
+use crate::{board::Board, color::Color, components::Piece, r#move::Move};
 
 
 const FEN_SQUARE_INDICES: [usize; 64] = [
@@ -15,11 +15,13 @@ const FEN_SQUARE_INDICES: [usize; 64] = [
 
 pub fn generate(board:&Board, last_move :Move)->String{
     let pp = piece_placement(board);
-    let fen = format!("{} {} {} {}",
+    let fen = format!("{} {} {} {} {} {}",
         pp, 
         last_move.color().get_opposite(), 
         extract_castling_rights(board), 
-        extract_en_passant(last_move)
+        extract_en_passant(last_move),
+        board.half_move_count,
+        board.full_move_count
     );
    
     fen

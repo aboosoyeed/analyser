@@ -6,8 +6,9 @@ pub struct Board{
     pub by_piece: ByPiece,
     pub by_color: ByColor,
     pub occupied: Bitboard,
-    pub castling_rights:u8
-
+    pub castling_rights:u8,
+    pub half_move_count:u8,
+    pub full_move_count:u16
 }
 
 impl Board {
@@ -16,12 +17,26 @@ impl Board {
             by_piece: ByPiece::init(), 
             by_color: ByColor::init(), 
             occupied: Bitboard(0xffff_0000_0000_ffff),
-            castling_rights: 0b_1111 
+            castling_rights: 0b_1111 ,
+            half_move_count:0,
+            full_move_count:1,
         }
     }
 
     pub fn apply_move(&mut self, mov : Move)->Option<u8>{
         let mut source:Option<u8> = None;
+        
+        if mov.is_capture || mov.piece=={Piece::Pawn} {
+            self.half_move_count = 0
+        }else{
+            self.half_move_count += 1;
+        }
+
+        if mov.color()==Color::Black{
+            self.full_move_count += 1;
+        }
+
+
         if mov.castling.is_some() {
             self.apply_castling(mov)
         }else{
