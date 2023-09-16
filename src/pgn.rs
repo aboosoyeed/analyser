@@ -1,6 +1,4 @@
 
-use std::ops::Deref;
-
 use regex::Regex;
 
 use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::{index_to_file_rank, get_header_regex}};
