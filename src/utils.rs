@@ -60,3 +60,19 @@ pub fn get_header_regex()->Regex{
      Regex::new(r"(\[.*?\])").unwrap()
 }
 
+
+pub fn color_str(str: &str, color:&str)->String{
+    
+    let code = if color=="yellow"{
+        "33m"
+    } else if color=="blue"{
+        "34m"
+    } else if color=="gray"{
+        "30m"
+    }
+    else{
+        "37m"
+    };
+    
+    format!("\x1b[{}{}\x1b[0m",code,str )
+}

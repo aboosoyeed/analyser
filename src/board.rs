@@ -1,6 +1,6 @@
 use core::fmt;
 
-use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::Move, fen::generate, components::Piece,};
+use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::Move, fen::generate, components::Piece, utils::color_str,};
 
 pub struct Board{
     pub by_piece: ByPiece,
@@ -195,19 +195,5 @@ impl fmt::Display for Board {
 
 
 
-fn color_str(str: &str, color:&str)->String{
-    
-    let code = if color=="yellow"{
-        "33m"
-    } else if color=="blue"{
-        "34m"
-    } else if color=="gray"{
-        "30m"
-    }
-    else{
-        "37m"
-    };
-    
-    format!("\x1b[{}{}\x1b[0m",code,str )
-}
+
 
