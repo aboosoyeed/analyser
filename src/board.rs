@@ -73,25 +73,32 @@ impl Board {
         let color = mov.color();
         let piece = mov.piece;
         let is_capture = mov.is_capture;
+        let promotion = mov.promotion;
         let source = self.get_source_index(mov);
+        
             
         if is_capture{
-            let opp_color_board = &mut self.by_color.get_mut(color.get_opposite());
-            opp_color_board.clear_bit(target.unwrap());
             let mut opp_piece = self.get_piece_at_index(target.unwrap());
+            let mut opponent_target = target.unwrap(); 
             
-            // potentially enpassant
             if opp_piece==Err("piece_not_found") && piece==Piece::Pawn{
-                let revised_target = if color==Color::White{
+                 // potentially enpassant
+                opponent_target = if color==Color::White{
                     target.unwrap()-8
                 }else{
                     target.unwrap()+8
                 };
-                opp_piece = self.get_piece_at_index(revised_target);
+                opp_piece = self.get_piece_at_index(opponent_target);
+                self.occupied.clear_bit(opponent_target);
             }
             
+            let opp_color_board = &mut self.by_color.get_mut(color.get_opposite());
+            opp_color_board.clear_bit(opponent_target);
+           
             let opp_piece_board = &mut self.by_piece.get_mut(opp_piece.unwrap());
-            opp_piece_board.clear_bit(target.unwrap())
+            opp_piece_board.clear_bit(opponent_target);
+            
+            
         }
 
         if piece==Piece::Rook && (source==0 || source==7 || source==56 || source==63  ){
@@ -107,6 +114,18 @@ impl Board {
         }
 
         self.move_piece(source, target.unwrap(), color, piece);
+
+        // once we have dealt with capture and moving piece. we deal with promotion
+
+        if promotion.is_some(){
+            let current_piece_board =  &mut self.by_piece.get_mut(piece);
+            current_piece_board.clear_bit(target.unwrap());
+
+            let promotion_piece_board =  &mut self.by_piece.get_mut(promotion.unwrap());
+            promotion_piece_board.set_bit(target.unwrap());
+
+        }
+
         source
         
     }

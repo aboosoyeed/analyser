@@ -19,7 +19,7 @@ use std::fs;
 
 
 fn main() {
-    let contents = fs::read_to_string("./tests/pgn/2.pgn")
+    let contents = fs::read_to_string("./tests/pgn/3.pgn")
         .expect("Should have been able to read the file");
     let mut engine = Engine::new();
     let fens = PGN::parse(contents);

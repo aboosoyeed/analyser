@@ -29,10 +29,13 @@ impl PGN{
                 //let (file,rank) =index_to_file_rank(source.unwrap());
                 mov.source = index_to_file_rank(source.unwrap());
             }
+            
+
             let fen = board.generate_fen(mov);
             fens.push(fen);
 
         }
+        //println!("{}",board);
         fens
          
     }

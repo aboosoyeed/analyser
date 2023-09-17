@@ -8,7 +8,8 @@ pub struct Move{
     pub is_capture: bool,
     pub castling: Option<Castling>,
     pub target: (Option<File>,Option<Rank>), // will be None if its a castling 
-    pub source:(Option<File>,Option<Rank>)
+    pub source:(Option<File>,Option<Rank>),
+    pub promotion: Option<Piece>
 }
 
 impl Move {
@@ -19,25 +20,34 @@ impl Move {
         let mut castling = None;
         let mut source = (None,None);
         let mut target = (None,None);
-        let mut en_passant = false;                
         let san_chars = san.chars();
         let mut positions:Vec<char> = vec![];
-        
-        for ch in san_chars{
+        let mut promotion = None;
+        let mut has_promotion= false;
+        for (i,ch) in san_chars.enumerate(){
             if ch=='O'{
                 castling = Some(Castling::parse(&san));
                 piece = Some(Piece::King)
             }
-            if ch =='x' {
+            else if ch =='x' {
                 is_capture = true;
             }
-            if (ch>='a' && ch<='h') || (ch>='1' && ch<='8') {
+            else if (ch>='a' && ch<='h') || (ch>='1' && ch<='8') {
                 positions.push(ch);
             }
-
-            if is_piece(ch){
-                piece = Piece::from_char(ch);
+            else if ch=='=' {
+                has_promotion = true;
             }
+            else if is_piece(ch){
+                if has_promotion { // last charcter was =
+                    promotion = Piece::from_char(ch);
+                }else{
+                    piece = Piece::from_char(ch);
+                }
+                
+            }
+
+            
 
         } 
 
@@ -59,7 +69,7 @@ impl Move {
         
 
         assert!( piece.is_some(), "piece could not be destructured {}", san);
-        Move { san, index, piece: piece.unwrap(), is_capture , castling, target, source}
+        Move { san, index, piece: piece.unwrap(), is_capture , castling, target, source, promotion}
     }
 
     pub fn get_target_index(&self) -> Option<u8> {
