@@ -19,7 +19,7 @@ impl Move {
         let mut castling = None;
         let mut source = (None,None);
         let mut target = (None,None);
-                        
+        let mut en_passant = false;                
         let san_chars = san.chars();
         let mut positions:Vec<char> = vec![];
         

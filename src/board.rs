@@ -72,13 +72,24 @@ impl Board {
         let target = mov.get_target_index();
         let color = mov.color();
         let piece = mov.piece;
-        let is_capture = mov.is_capture;     
+        let is_capture = mov.is_capture;
         let source = self.get_source_index(mov);
             
         if is_capture{
             let opp_color_board = &mut self.by_color.get_mut(color.get_opposite());
             opp_color_board.clear_bit(target.unwrap());
-            let opp_piece = self.get_piece_at_index(target.unwrap());
+            let mut opp_piece = self.get_piece_at_index(target.unwrap());
+            
+            // potentially enpassant
+            if opp_piece==Err("piece_not_found") && piece==Piece::Pawn{
+                let revised_target = if color==Color::White{
+                    target.unwrap()-8
+                }else{
+                    target.unwrap()+8
+                };
+                opp_piece = self.get_piece_at_index(revised_target);
+            }
+            
             let opp_piece_board = &mut self.by_piece.get_mut(opp_piece.unwrap());
             opp_piece_board.clear_bit(target.unwrap())
         }
@@ -129,7 +140,7 @@ impl Board {
                 return Ok(piece);
             } 
         }
-        Err("piece not found")
+        Err("piece_not_found")
     }
 
 }

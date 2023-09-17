@@ -216,6 +216,17 @@ impl File {
 
 }
 
+impl Sub for File {
+    type Output = usize;
+
+    fn sub(self, other: File) -> usize {
+        let self_value = self as usize;
+        let other_value = other as usize;
+        self_value.abs_diff(other_value)
+        
+    }
+}  
+
 #[derive(Copy,Clone,Debug)]
 pub enum Rank{
     FIRST=0,SECOND,THIRD,FOURTH,FIFTH,SIXTH,SEVENTH,EIGHT,
