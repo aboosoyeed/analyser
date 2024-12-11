@@ -23,7 +23,7 @@ impl Board {
         }
     }
 
-    pub fn apply_move(&mut self, mov : Move)->Option<u8>{
+    pub fn apply_move(&mut self, mov : &Move)->Option<u8>{
         let mut source:Option<u8> = None;
         
         if mov.is_capture || mov.piece=={Piece::Pawn} {
@@ -45,7 +45,7 @@ impl Board {
         source
     }
 
-    fn apply_castling(&mut self, mov:Move){
+    fn apply_castling(&mut self, mov:&Move){
         let color = mov.color();
         let castling = mov.castling ;
         let ((ks,kt),(rs,rt)) = castling.unwrap().compute_squares(color);
@@ -68,7 +68,7 @@ impl Board {
         self.castling_rights = self.castling_rights & mask;
     }
 
-    fn apply_normal_move(&mut self, mov:Move) ->u8{
+    fn apply_normal_move(&mut self, mov:&Move) ->u8{
         let target = mov.get_target_index();
         let color = mov.color();
         let piece = mov.piece;
@@ -140,13 +140,13 @@ impl Board {
         piece_board.toggle(source,target);
     }
 
-    pub fn generate_fen(&self, last_move:Move)->String{
+    pub fn generate_fen(&self, last_move:&Move)->String{
         generate(self, last_move)
     }
 
     
 
-    pub fn get_source_index(&self, mov : Move) ->u8{
+    pub fn get_source_index(&self, mov : &Move) ->u8{
         let piece = mov.piece;
         piece.compute_source(self,mov)
     }

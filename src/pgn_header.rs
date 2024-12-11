@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 pub struct PgnHeaders {
     event: Option<String>,
     site: Option<String>,

@@ -24,7 +24,7 @@ impl Move {
         let mut positions:Vec<char> = vec![];
         let mut promotion = None;
         let mut has_promotion= false;
-        for (i,ch) in san_chars.enumerate(){
+        for (_,ch) in san_chars.enumerate(){
             if ch=='O'{
                 castling = Some(Castling::parse(&san));
                 piece = Some(Piece::King)

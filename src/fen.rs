@@ -13,7 +13,7 @@ const FEN_SQUARE_INDICES: [usize; 64] = [
 ];
 
 
-pub fn generate(board:&Board, last_move :Move)->String{
+pub fn generate(board:&Board, last_move :&Move)->String{
     let pp = piece_placement(board);
     let fen = format!("{} {} {} {} {} {}",
         pp, 
@@ -65,7 +65,7 @@ fn piece_placement(board:&Board) ->String{
     piece_placement
 }
 
-fn extract_en_passant(mov :Move)-> String{
+fn extract_en_passant(mov :&Move)-> String{
     if mov.piece==Piece::Pawn{
         let (file,source_rank) = mov.source;
         let (_,target_rank) = mov.target;

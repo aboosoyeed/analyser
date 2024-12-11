@@ -1,43 +1,47 @@
 
+#![allow(dead_code)]
 use regex::Regex;
 
 use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::{index_to_file_rank, get_header_regex}};
 
-
 pub struct PGN{
     headers:PgnHeaders,
-    pub moves: Vec<Move>,
+    moves: Vec<Move>,
     _move_counter:u16
 }
 
 impl PGN{
-    
-    pub fn parse(contents:String) -> Vec<String>{
-        let mut board = Board::init();
-    
-        let mut pgn = PGN{ headers: PgnHeaders::new() , moves: Vec::new(), _move_counter:0};
+
+    pub fn new(contents: String) -> Self {
+        let mut pgn = PGN {
+            headers: PgnHeaders::new(),
+            moves: Vec::new(),
+            _move_counter: 0,
+        };
         pgn.extract_headers(contents.clone());
         pgn.extract_moves(contents);
-        
-        let moves = pgn.moves;
+        pgn
+    }
+    
+    pub fn parse(&mut self) -> Vec<String>{
+        let mut board = Board::init();
         let mut fens:Vec<String> =Vec::new();
-        for mut mov in moves{
-            let cloned_move = mov.clone();
-            let source = board.apply_move(cloned_move);
-            
+        for mov in &mut self.moves{
+            let source = board.apply_move(&mov);
+
             if source.is_some() {
                 //let (file,rank) =index_to_file_rank(source.unwrap());
                 mov.source = index_to_file_rank(source.unwrap());
             }
-            
 
-            let fen = board.generate_fen(mov);
+
+            let fen = board.generate_fen(&mov);
             fens.push(fen);
 
         }
         //println!("{}",board);
         fens
-         
+
     }
 
     fn extract_headers(&mut self, contents:String){

@@ -12,7 +12,7 @@ impl Engine{
         
         let mut instance = Self{
             engine,
-            depth: 10
+            depth: 16
         };
         instance.init();
         instance

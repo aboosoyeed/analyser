@@ -52,7 +52,7 @@ macro_rules!  define_piece{
             }
              
              
-            pub fn compute_source(&self,board:&Board,mov:Move)->u8{
+            pub fn compute_source(&self,board:&Board,mov:&Move)->u8{
                 return match self {
                     $(
                         Piece::$name=> Self::_compute_source(board,mov,self.delta(),$step_only),
@@ -126,7 +126,7 @@ impl Piece {
         ]
     }
 
-    fn _compute_source(board:&Board,mov:Move, deltas:&[i8], step_only:bool) -> u8{
+    fn _compute_source(board:&Board,mov:&Move, deltas:&[i8], step_only:bool) -> u8{
         let piece = mov.piece;
         let piece_bitboard = board.by_piece.get(piece);
         let color_bitboard = board.by_color.get(mov.color());
