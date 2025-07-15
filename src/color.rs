@@ -28,6 +28,7 @@ impl fmt::Display for Color {
 }
 
 
+#[derive(Clone)]
 pub struct ByColor {
     pub black: Bitboard,
     pub white: Bitboard,

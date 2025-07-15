@@ -5,9 +5,9 @@ use regex::Regex;
 use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::{index_to_file_rank, get_header_regex}};
 
 pub struct PGN{
-    headers:PgnHeaders,
-    moves: Vec<Move>,
-    _move_counter:u16
+    pub headers:PgnHeaders,
+    pub moves: Vec<Move>,
+    pub _move_counter:u16
 }
 
 impl PGN{
@@ -22,8 +22,13 @@ impl PGN{
         pgn.extract_moves(contents);
         pgn
     }
+
+    pub fn parse(contents: String) -> Vec<String> {
+        let mut pgn = Self::new(contents);
+        pgn.parse_moves()
+    }
     
-    pub fn parse(&mut self) -> Vec<String>{
+    pub fn parse_moves(&mut self) -> Vec<String>{
         let mut board = Board::init();
         let mut fens:Vec<String> =Vec::new();
         for mov in &mut self.moves{
@@ -44,7 +49,7 @@ impl PGN{
 
     }
 
-    fn extract_headers(&mut self, contents:String){
+    pub fn extract_headers(&mut self, contents:String){
         let header_pattern = get_header_regex();
         let headers:Vec<&str> = header_pattern.find_iter(&contents).map(|m| m.as_str()).collect();
         for line in headers{
@@ -53,7 +58,7 @@ impl PGN{
 
     }
 
-    fn extract_moves(&mut self, contents:String){
+    pub fn extract_moves(&mut self, contents:String){
         let header_pattern = get_header_regex();
         let move_list = header_pattern.replace_all(&contents, "");
         let move_list = move_list.trim();

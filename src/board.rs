@@ -2,6 +2,7 @@ use core::fmt;
 
 use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::Move, fen::generate, components::Piece, utils::color_str,};
 
+#[derive(Clone)]
 pub struct Board{
     pub by_piece: ByPiece,
     pub by_color: ByColor,

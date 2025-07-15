@@ -1,5 +1,6 @@
 use crate::{bitboard::Bitboard, components::Piece};
 
+#[derive(Clone)]
 pub struct ByPiece{
     pub pawn: Bitboard,
     pub knight: Bitboard,
