@@ -1,23 +1,7 @@
-mod pgn;
-mod bitboard;
-mod fen;
-
-mod pgn_header;
-mod board;
-mod role;
-mod color;
-mod r#move;
-mod components;
-mod utils;
-
-mod engine{
-    pub mod engine;
-}
-use engine::engine::Engine;
+use analyzer::*;
+use analyzer::{board::Board, pgn::PGN, engine::engine::Engine};
 use std::{fs, io::{self, Write}};
 use clap::{Parser, Subcommand};
-use board::Board;
-use pgn::PGN;
 
 #[derive(Parser)]
 #[command(name = "analyzer")]
@@ -74,7 +58,7 @@ fn navigate_game(pgn_path: &str) {
         .expect(&format!("Should have been able to read the file: {}", pgn_path));
     
     let mut board = Board::init();
-    let mut pgn = pgn::PGN{ 
+    let mut pgn = PGN{ 
         headers: pgn_header::PgnHeaders::new(), 
         moves: Vec::new(), 
         _move_counter: 0 

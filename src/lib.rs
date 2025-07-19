@@ -1,10 +1,14 @@
-mod bitboard;
-mod fen;
-mod pgn;
-mod pgn_header;
-mod board;
-mod role;
+pub mod bitboard;
+pub mod fen;
+pub mod pgn;
+pub mod pgn_header;
+pub mod board;
+pub mod role;
 pub mod color;
-mod components;
-mod utils;
+pub mod components;
+pub mod utils;
 pub mod r#move;
+
+pub mod engine {
+    pub mod engine;
+}
