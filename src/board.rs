@@ -2,29 +2,112 @@ use core::fmt;
 
 use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::Move, fen::generate, components::Piece, utils::color_str, error::{ChessError, Square}};
 
+/// Represents a chess board position using bitboards for efficient operations.
+/// 
+/// The board uses separate bitboards for each piece type and color, allowing
+/// for fast position queries and move generation. It maintains all necessary
+/// game state including castling rights, move counters, and piece positions.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use analyzer::board::Board;
+/// use analyzer::r#move::Move;
+/// 
+/// // Create a new board in starting position
+/// let mut board = Board::init();
+/// 
+/// // Apply a move
+/// let move_e4 = Move::new("e4".to_string(), 0);
+/// board.apply_move(&move_e4);
+/// 
+/// // Display the board
+/// println!("{}", board);
+/// ```
 #[derive(Clone)]
 pub struct Board{
+    /// Bitboards for each piece type (pawn, knight, bishop, rook, queen, king)
     pub by_piece: ByPiece,
+    /// Bitboards for each color (white, black)
     pub by_color: ByColor,
+    /// Combined bitboard of all occupied squares
     pub occupied: Bitboard,
-    pub castling_rights:u8,
-    pub half_move_count:u8,
-    pub full_move_count:u16
+    /// Castling rights encoded as 4 bits: KQkq (white king/queen, black king/queen)
+    pub castling_rights: u8,
+    /// Number of half-moves since last pawn move or capture (for 50-move rule)
+    pub half_move_count: u8,
+    /// Full move counter (incremented after Black's move)
+    pub full_move_count: u16
 }
 
 impl Board {
-    pub fn init()->Board{
+    /// Creates a new chess board in the standard starting position.
+    /// 
+    /// The board is initialized with all pieces in their starting squares:
+    /// - White pieces on ranks 1-2
+    /// - Black pieces on ranks 7-8
+    /// - All castling rights available
+    /// - Move counters reset to starting values
+    /// 
+    /// # Returns
+    /// 
+    /// A new `Board` instance ready for gameplay.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use analyzer::board::Board;
+    /// 
+    /// let board = Board::init();
+    /// assert_eq!(board.full_move_count, 1);
+    /// assert_eq!(board.half_move_count, 0);
+    /// ```
+    pub fn init() -> Board {
         Board { 
             by_piece: ByPiece::init(), 
             by_color: ByColor::init(), 
             occupied: Bitboard(0xffff_0000_0000_ffff),
-            castling_rights: 0b_1111 ,
-            half_move_count:0,
-            full_move_count:1,
+            castling_rights: 0b_1111,
+            half_move_count: 0,
+            full_move_count: 1,
         }
     }
 
-    pub fn apply_move(&mut self, mov : &Move)->Option<u8>{
+    /// Applies a move to the board, updating all relevant state.
+    /// 
+    /// This handles all types of moves including:
+    /// - Normal piece moves
+    /// - Captures (including en passant)
+    /// - Castling
+    /// - Pawn promotion
+    /// 
+    /// The method automatically updates:
+    /// - Piece positions on the bitboards
+    /// - Castling rights when kings or rooks move
+    /// - Half-move clock for the 50-move rule
+    /// - Full move counter
+    /// 
+    /// # Arguments
+    /// 
+    /// * `mov` - The move to apply in parsed algebraic notation
+    /// 
+    /// # Returns
+    /// 
+    /// Returns the source square index for normal moves, or `None` for castling moves.
+    /// This is used by PGN processing to determine the source square for ambiguous notation.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use analyzer::board::Board;
+    /// use analyzer::r#move::Move;
+    /// 
+    /// let mut board = Board::init();
+    /// let move_e4 = Move::new("e4".to_string(), 0);
+    /// let source = board.apply_move(&move_e4);
+    /// // source will be Some(12) indicating the pawn moved from e2
+    /// ```
+    pub fn apply_move(&mut self, mov: &Move) -> Option<u8> {
         let mut source:Option<u8> = None;
         
         if mov.is_capture || mov.piece=={Piece::Pawn} {
@@ -141,7 +224,33 @@ impl Board {
         piece_board.toggle(source,target);
     }
 
-    pub fn generate_fen(&self, last_move:&Move)->String{
+    /// Generates a FEN (Forsyth-Edwards Notation) string representing the current position.
+    /// 
+    /// FEN is a standard notation for describing chess positions. The generated string
+    /// includes piece placement, active color, castling availability, en passant target,
+    /// half-move clock, and full-move number.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `last_move` - The last move played, used to determine en passant possibilities
+    /// 
+    /// # Returns
+    /// 
+    /// A FEN string representing the current board position.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust,no_run
+    /// use analyzer::board::Board;
+    /// use analyzer::r#move::Move;
+    /// 
+    /// let mut board = Board::init();
+    /// let move_e4 = Move::new("e4".to_string(), 0);
+    /// board.apply_move(&move_e4);
+    /// let fen = board.generate_fen(&move_e4);
+    /// // Returns FEN representation of the position
+    /// ```
+    pub fn generate_fen(&self, last_move: &Move) -> String {
         generate(self, last_move)
     }
 

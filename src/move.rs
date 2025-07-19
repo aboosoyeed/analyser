@@ -1,19 +1,82 @@
 use crate::{components::{Piece,Rank, File}, utils::{file_rank_to_index, is_piece}, color::Color};
 
+/// Represents a chess move parsed from Standard Algebraic Notation (SAN).
+/// 
+/// This struct contains all the information needed to represent a chess move,
+/// including the piece being moved, source and target squares, captures,
+/// castling, and promotions. Moves are typically created by parsing SAN
+/// strings like "e4", "Nf3", "O-O", "exd5", "e8=Q", etc.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use analyzer::r#move::Move;
+/// 
+/// // Parse a simple pawn move
+/// let pawn_move = Move::new("e4".to_string(), 0);
+/// 
+/// // Parse a knight move with disambiguation
+/// let knight_move = Move::new("Nbd7".to_string(), 1);
+/// 
+/// // Parse castling
+/// let castle = Move::new("O-O".to_string(), 2);
+/// 
+/// // Parse a capture with promotion
+/// let promotion = Move::new("exd8=Q+".to_string(), 3);
+/// ```
 #[derive(Debug, Clone)]
-pub struct Move{
+pub struct Move {
+    /// The original Standard Algebraic Notation string
     pub san: String,
+    /// Move index in the game (0 for first move, 1 for second, etc.)
     pub index: u16,
+    /// The piece being moved
     pub piece: Piece,
+    /// Whether this move captures an opponent piece
     pub is_capture: bool,
+    /// Castling information if this is a castling move
     pub castling: Option<Castling>,
-    pub target: (Option<File>,Option<Rank>), // will be None if its a castling 
-    pub source:(Option<File>,Option<Rank>),
+    /// Target square coordinates (None for castling moves)
+    pub target: (Option<File>, Option<Rank>),
+    /// Source square coordinates (determined during move application)
+    pub source: (Option<File>, Option<Rank>),
+    /// Promotion piece if this is a pawn promotion
     pub promotion: Option<Piece>
 }
 
 impl Move {
-    pub fn new(san:String, index:u16)->Move{
+    /// Creates a new Move by parsing a Standard Algebraic Notation string.
+    /// 
+    /// This function parses various types of chess moves including:
+    /// - Simple piece moves: "e4", "Nf3", "Bb5"
+    /// - Captures: "exd5", "Nxe4", "Qxf7+"
+    /// - Castling: "O-O" (kingside), "O-O-O" (queenside)
+    /// - Pawn promotion: "e8=Q", "axb8=N+"
+    /// - Disambiguated moves: "Nbd7", "R1e1", "Qh4e1"
+    /// 
+    /// # Arguments
+    /// 
+    /// * `san` - The Standard Algebraic Notation string to parse
+    /// * `index` - The move index in the game sequence
+    /// 
+    /// # Returns
+    /// 
+    /// A new `Move` instance with all fields populated based on the SAN string.
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if the SAN string cannot be parsed into a valid piece type.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use analyzer::r#move::Move;
+    /// 
+    /// let move1 = Move::new("e4".to_string(), 0);
+    /// let move2 = Move::new("Nf3".to_string(), 1);
+    /// let castle = Move::new("O-O".to_string(), 10);
+    /// ```
+    pub fn new(san: String, index: u16) -> Move {
         
         let mut piece = Some(Piece::Pawn);
         let mut is_capture = false;
@@ -95,9 +158,28 @@ impl Move {
 
 }
 
-#[derive(Debug, PartialEq, Clone,Copy)]
-pub enum Castling{
+/// Represents the type of castling move.
+/// 
+/// Chess allows two types of castling:
+/// - Kingside castling (O-O): King moves toward the h-file rook
+/// - Queenside castling (O-O-O): King moves toward the a-file rook
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use analyzer::r#move::Castling;
+/// 
+/// // Kingside castling is represented as "O-O" in algebraic notation
+/// let kingside = Castling::King;
+/// 
+/// // Queenside castling is represented as "O-O-O" in algebraic notation  
+/// let queenside = Castling::Queen;
+/// ```
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Castling {
+    /// Queenside castling (O-O-O) - King moves toward the a-file
     Queen,
+    /// Kingside castling (O-O) - King moves toward the h-file  
     King
 }
 impl Castling {

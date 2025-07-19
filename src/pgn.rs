@@ -4,10 +4,35 @@ use regex::Regex;
 
 use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::{index_to_file_rank, get_header_regex}};
 
+/// Represents a chess game in Portable Game Notation (PGN) format.
+/// 
+/// PGN is a standard format for recording chess games. This struct provides
+/// functionality to parse PGN files, extract game metadata (headers), and
+/// process the sequence of moves with board state tracking.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use analyzer::pgn::PGN;
+/// 
+/// let pgn_content = r#"
+/// [Event "World Championship"]
+/// [White "Kasparov"]
+/// [Black "Karpov"]
+/// 
+/// 1. e4 e5 2. Nf3 Nc6 3. Bb5 a6
+/// "#;
+/// 
+/// let fens = PGN::parse(pgn_content.to_string());
+/// // Returns a vector of FEN strings representing each position
+/// ```
 pub struct PGN{
-    pub headers:PgnHeaders,
+    /// Game metadata like event, players, date, etc.
+    pub headers: PgnHeaders,
+    /// Sequence of moves in the game
     pub moves: Vec<Move>,
-    pub _move_counter:u16
+    /// Internal move counter for processing
+    pub _move_counter: u16
 }
 
 impl PGN{
@@ -23,6 +48,30 @@ impl PGN{
         pgn
     }
 
+    /// Parses a PGN string and returns FEN representations of each position.
+    /// 
+    /// This is the main entry point for PGN processing. It takes a complete PGN
+    /// file content, extracts headers and moves, then simulates the game to
+    /// generate FEN strings for each position after each move.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `contents` - Complete PGN file content as a string
+    /// 
+    /// # Returns
+    /// 
+    /// A vector of FEN strings, where each string represents the board position
+    /// after the corresponding move in the game.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use analyzer::pgn::PGN;
+    /// 
+    /// let pgn = "1. e4 e5 2. Nf3 Nc6";
+    /// let positions = PGN::parse(pgn.to_string());
+    /// // Returns FEN strings for each position after e4, e5, Nf3, Nc6
+    /// ```
     pub fn parse(contents: String) -> Vec<String> {
         let mut pgn = Self::new(contents);
         pgn.parse_moves()
