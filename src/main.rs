@@ -27,6 +27,26 @@ enum Commands {
     },
 }
 
+#[derive(Debug)]
+enum Command {
+    Next,
+    Previous,
+    Quit,
+    Help,
+    Empty,
+}
+
+fn parse_command(input: &str) -> Result<Command, String> {
+    match input.trim().to_lowercase().as_str() {
+        "n" | "next" => Ok(Command::Next),
+        "p" | "prev" | "previous" => Ok(Command::Previous),
+        "q" | "quit" => Ok(Command::Quit),
+        "h" | "help" => Ok(Command::Help),
+        "" => Ok(Command::Empty),
+        unknown => Err(format!("[Chess Analyzer] Input error: Unknown command '{}'. Type 'h' for help.", unknown))
+    }
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -42,7 +62,7 @@ fn main() {
 
 fn analyze_game(pgn_path: &str) {
     let contents = fs::read_to_string(pgn_path)
-        .expect(&format!("Should have been able to read the file: {}", pgn_path));
+        .expect(&format!("[Chess Analyzer] File error: Could not read file '{}'", pgn_path));
     let mut engine = Engine::new();
     let fens = PGN::parse(contents);
 
@@ -55,7 +75,7 @@ fn analyze_game(pgn_path: &str) {
 
 fn navigate_game(pgn_path: &str) {
     let contents = fs::read_to_string(pgn_path)
-        .expect(&format!("Should have been able to read the file: {}", pgn_path));
+        .expect(&format!("[Chess Analyzer] File error: Could not read file '{}'", pgn_path));
     
     let mut board = Board::init();
     let mut pgn = PGN{ 
@@ -97,40 +117,43 @@ fn navigate_game(pgn_path: &str) {
         io::stdout().flush().unwrap();
         
         let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("Failed to read line");
+        io::stdin().read_line(&mut input).expect("[Chess Analyzer] Input error: Failed to read input");
         let input = input.trim();
         
-        match input {
-            "n" | "next" => {
+        match parse_command(input) {
+            Ok(Command::Next) => {
                 if current_position < moves.len() {
                     current_position += 1;
                 } else {
-                    println!("Already at the end of the game!");
+                    println!("[Chess Analyzer] Navigation: Already at the end of the game!");
                 }
             }
-            "p" | "prev" | "previous" => {
+            Ok(Command::Previous) => {
                 if current_position > 0 {
                     current_position -= 1;
                 } else {
-                    println!("Already at the start of the game!");
+                    println!("[Chess Analyzer] Navigation: Already at the start of the game!");
                 }
             }
-            "q" | "quit" => {
-                println!("Goodbye!");
+            Ok(Command::Quit) => {
+                println!("[Chess Analyzer] Goodbye!");
                 break;
             }
-            "h" | "help" => {
-                println!("Available commands:");
+            Ok(Command::Help) => {
+                println!("[Chess Analyzer] Available commands:");
                 println!("  n, next     - Move to next position");
                 println!("  p, previous - Move to previous position");
                 println!("  q, quit     - Exit navigator");
                 println!("  h, help     - Show this help");
                 println!("Press Enter to continue...");
                 let mut _dummy = String::new();
-                io::stdin().read_line(&mut _dummy).unwrap();
+                io::stdin().read_line(&mut _dummy).expect("[Chess Analyzer] Input error: Failed to read input");
             }
-            _ => {
-                println!("Unknown command. Type 'h' for help.");
+            Ok(Command::Empty) => {
+                // Do nothing for empty input
+            }
+            Err(error_msg) => {
+                println!("{}", error_msg);
             }
         }
     }
