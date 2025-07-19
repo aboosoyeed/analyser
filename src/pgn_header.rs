@@ -44,12 +44,4 @@ impl PgnHeaders{
         self.result = Some(result);
     }
 
-    pub fn print_headers(&self) {
-        println!("Event: {}", self.event.as_deref().unwrap_or(""));
-        println!("Site: {}", self.site.as_deref().unwrap_or(""));
-        println!("Date: {}", self.date.as_deref().unwrap_or(""));
-        println!("White: {}", self.white.as_deref().unwrap_or(""));
-        println!("Black: {}", self.black.as_deref().unwrap_or(""));
-        println!("Result: {}", self.result.as_deref().unwrap_or(""));
-    }
 }

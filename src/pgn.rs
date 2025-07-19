@@ -7,24 +7,38 @@ use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::{index_to
 /// Represents a chess game in Portable Game Notation (PGN) format.
 /// 
 /// PGN is a standard format for recording chess games. This struct provides
-/// functionality to parse PGN files, extract game metadata (headers), and
-/// process the sequence of moves with board state tracking.
+/// two distinct usage patterns for different application modes:
+/// 
+/// 1. **Analysis Mode**: Use `PGN::parse()` to get FEN strings for engine analysis
+/// 2. **Navigation Mode**: Use `extract_headers()` + `extract_moves()` for interactive replay
+/// 
+/// This dual-purpose design supports both automated chess engine analysis and 
+/// interactive step-by-step game navigation.
 /// 
 /// # Examples
 /// 
+/// ## Analysis Mode (for chess engine processing)
 /// ```rust
 /// use analyzer::pgn::PGN;
 /// 
-/// let pgn_content = r#"
-/// [Event "World Championship"]
-/// [White "Kasparov"]
-/// [Black "Karpov"]
-/// 
-/// 1. e4 e5 2. Nf3 Nc6 3. Bb5 a6
-/// "#;
-/// 
+/// let pgn_content = "1. e4 e5 2. Nf3 Nc6";
 /// let fens = PGN::parse(pgn_content.to_string());
-/// // Returns a vector of FEN strings representing each position
+/// // Returns FEN strings for each position after e4, e5, Nf3, Nc6
+/// ```
+/// 
+/// ## Navigation Mode (for interactive game replay)
+/// ```rust
+/// # use analyzer::pgn::PGN;
+/// # use analyzer::pgn_header::PgnHeaders;
+/// let mut pgn = PGN {
+///     headers: PgnHeaders::new(),
+///     moves: Vec::new(),
+///     _move_counter: 0,
+/// };
+/// # let pgn_content = "1. e4 e5".to_string();
+/// pgn.extract_headers(pgn_content.clone());
+/// pgn.extract_moves(pgn_content);
+/// // Now pgn.moves contains Move objects for step-by-step navigation
 /// ```
 pub struct PGN{
     /// Game metadata like event, players, date, etc.
@@ -48,11 +62,13 @@ impl PGN{
         pgn
     }
 
-    /// Parses a PGN string and returns FEN representations of each position.
+    /// **Analysis Mode**: Parses a PGN string and returns FEN representations for engine analysis.
     /// 
-    /// This is the main entry point for PGN processing. It takes a complete PGN
+    /// This method is designed for chess engine workflows. It takes a complete PGN
     /// file content, extracts headers and moves, then simulates the game to
     /// generate FEN strings for each position after each move.
+    /// 
+    /// Use this for automated analysis where you need FEN strings to feed to a chess engine.
     /// 
     /// # Arguments
     /// 
@@ -107,6 +123,13 @@ impl PGN{
 
     }
 
+    /// **Navigation Mode**: Extracts and parses PGN headers for interactive game replay.
+    /// 
+    /// This method is part of the navigation workflow. It parses PGN header tags
+    /// like [Event "..."], [White "..."], etc. and populates the headers field.
+    /// 
+    /// Use this in combination with `extract_moves()` when you need structured
+    /// access to game metadata and moves for step-by-step navigation.
     pub fn extract_headers(&mut self, contents:String){
         let header_pattern = get_header_regex();
         let headers:Vec<&str> = header_pattern.find_iter(&contents).map(|m| m.as_str()).collect();
@@ -116,6 +139,13 @@ impl PGN{
 
     }
 
+    /// **Navigation Mode**: Extracts and parses moves for interactive game replay.
+    /// 
+    /// This method is part of the navigation workflow. It parses the move sequence
+    /// from PGN content and populates the moves field with Move objects.
+    /// 
+    /// Use this in combination with `extract_headers()` when you need to navigate
+    /// through a game move by move in interactive mode.
     pub fn extract_moves(&mut self, contents:String){
         let header_pattern = get_header_regex();
         let move_list = header_pattern.replace_all(&contents, "");
