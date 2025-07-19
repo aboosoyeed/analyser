@@ -1,4 +1,4 @@
-use crate::{components::{Piece,Rank, File}, utils::{file_rank_to_index, is_piece}, color::Color};
+use crate::{components::{Piece,Rank, File}, utils::{file_rank_to_index, is_piece}, color::Color, constants::castling};
 
 /// Represents a chess move parsed from Standard Algebraic Notation (SAN).
 /// 
@@ -191,15 +191,12 @@ impl Castling {
         }
     }
 
-    pub fn compute_squares(&self,color:Color) -> ((u8,u8),(u8,u8)){
-        if self==&Castling::King && color==Color::White {
-            ((4,6),(7,5))
-        }else if self==&Castling::Queen && color==Color::White {
-            ((4,2),(0,3))
-        }else if self==&Castling::King && color==Color::Black{
-            ((60,62),(63,61))
-        }else{
-            ((60,58),(56,59))
+    pub fn compute_squares(&self, color: Color) -> ((u8, u8), (u8, u8)) {
+        match (self, color) {
+            (Castling::King, Color::White) => castling::WHITE_KINGSIDE,
+            (Castling::Queen, Color::White) => castling::WHITE_QUEENSIDE,
+            (Castling::King, Color::Black) => castling::BLACK_KINGSIDE,
+            (Castling::Queen, Color::Black) => castling::BLACK_QUEENSIDE,
         }
     }
 

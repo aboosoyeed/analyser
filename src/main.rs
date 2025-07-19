@@ -1,5 +1,5 @@
 use analyzer::*;
-use analyzer::{board::Board, pgn::PGN, engine::engine::Engine};
+use analyzer::{board::Board, pgn::PGN, engine::engine::Engine, constants::defaults};
 use std::{fs, io::{self, Write}};
 use clap::{Parser, Subcommand};
 
@@ -16,13 +16,13 @@ enum Commands {
     /// Analyze game with Stockfish engine
     Analyze {
         /// Path to PGN file
-        #[arg(default_value = "./tests/pgn/3.pgn")]
+        #[arg(default_value_t = defaults::DEFAULT_PGN_PATH.to_string())]
         pgn_path: String,
     },
     /// Navigate through game interactively
     Navigate {
         /// Path to PGN file
-        #[arg(default_value = "./tests/pgn/3.pgn")]
+        #[arg(default_value_t = defaults::DEFAULT_PGN_PATH.to_string())]
         pgn_path: String,
     },
 }

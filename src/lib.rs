@@ -9,6 +9,8 @@ pub mod components;
 pub mod utils;
 pub mod r#move;
 pub mod error;
+pub mod constants;
+pub mod config;
 
 pub mod engine {
     pub mod engine;

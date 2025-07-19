@@ -1,5 +1,6 @@
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, Command, Stdio};
+use crate::constants::defaults;
 
 pub struct Engine {
     engine: Child,
@@ -12,7 +13,7 @@ impl Engine{
         
         let mut instance = Self{
             engine,
-            depth: 16
+            depth: defaults::DEFAULT_ENGINE_DEPTH as usize
         };
         instance.init();
         instance
