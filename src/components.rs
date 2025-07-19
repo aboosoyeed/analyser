@@ -52,13 +52,13 @@ macro_rules!  define_piece{
             }
              
              
-            pub fn compute_source(&self,board:&Board,mov:&Move)->u8{
-                return match self {
+            pub fn compute_source(&self,board:&Board,mov:&Move)->Result<u8, String>{
+                match self {
                     $(
                         Piece::$name=> Self::_compute_source(board,mov,self.delta(),$step_only),
                     )*
                 
-                };
+                }
             }
             
         }
@@ -126,7 +126,7 @@ impl Piece {
         ]
     }
 
-    fn _compute_source(board:&Board,mov:&Move, deltas:&[i8], step_only:bool) -> u8{
+    fn _compute_source(board:&Board,mov:&Move, deltas:&[i8], step_only:bool) -> Result<u8, String>{
         let piece = mov.piece;
         let piece_bitboard = board.by_piece.get(piece);
         let color_bitboard = board.by_color.get(mov.color());
@@ -159,8 +159,11 @@ impl Piece {
         
         
         
-        assert_eq!(source.count_ones(),1,"Mov : {}.{} \n{}",mov.index,mov.san, Bitboard(attack_bitboard).printable());
-        return source.trailing_zeros() as u8
+        if source.count_ones() != 1 {
+            return Err(format!("Move validation failed for {}.{}: expected exactly one source square, found {}. Attack pattern:\n{}", 
+                             mov.index, mov.san, source.count_ones(), Bitboard(attack_bitboard).printable()));
+        }
+        Ok(source.trailing_zeros() as u8)
 
     }    
 }

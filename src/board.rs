@@ -162,7 +162,13 @@ impl Board {
         if mov.castling.is_some() {
             self.apply_castling(mov)
         } else {
-            source = Some(self.apply_normal_move(mov));
+            match self.apply_normal_move(mov) {
+                Ok(src) => source = Some(src),
+                Err(error) => {
+                    eprintln!("[Chess Analyzer] Move error: {}", error);
+                    return None;
+                }
+            }
         }
         
         // Update piece lookup table after any move
@@ -194,13 +200,13 @@ impl Board {
         self.castling_rights = self.castling_rights & mask;
     }
 
-    fn apply_normal_move(&mut self, mov: &Move) -> u8 {
+    fn apply_normal_move(&mut self, mov: &Move) -> Result<u8, String> {
         let target = mov.get_target_index();
         let color = mov.color();
         let piece = mov.piece;
         let is_capture = mov.is_capture;
         let promotion = mov.promotion;
-        let source = self.get_source_index(mov);
+        let source = self.get_source_index(mov)?;
 
         if is_capture {
             let mut opp_piece = self.get_piece_at_index(target.unwrap());
@@ -251,7 +257,7 @@ impl Board {
             promotion_piece_board.set_bit(target.unwrap());
         }
 
-        source
+        Ok(source)
     }
 
     fn move_piece(&mut self, source: u8, target: u8, color: Color, piece: Piece) {
@@ -294,7 +300,7 @@ impl Board {
         generate(self, last_move)
     }
 
-    pub fn get_source_index(&self, mov: &Move) -> u8 {
+    pub fn get_source_index(&self, mov: &Move) -> Result<u8, String> {
         let piece = mov.piece;
         piece.compute_source(self, mov)
     }

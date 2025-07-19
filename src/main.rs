@@ -52,17 +52,23 @@ fn main() {
 
     match &cli.command {
         Commands::Analyze { pgn_path } => {
-            analyze_game(pgn_path);
+            if let Err(error) = analyze_game(pgn_path) {
+                eprintln!("{}", error);
+                std::process::exit(1);
+            }
         }
         Commands::Navigate { pgn_path } => {
-            navigate_game(pgn_path);
+            if let Err(error) = navigate_game(pgn_path) {
+                eprintln!("{}", error);
+                std::process::exit(1);
+            }
         }
     }
 }
 
-fn analyze_game(pgn_path: &str) {
+fn analyze_game(pgn_path: &str) -> Result<(), String> {
     let contents = fs::read_to_string(pgn_path)
-        .expect(&format!("[Chess Analyzer] File error: Could not read file '{}'", pgn_path));
+        .map_err(|e| format!("[Chess Analyzer] File error: Could not read file '{}': {}", pgn_path, e))?;
     let mut engine = Engine::new();
     let fens = PGN::parse(contents);
 
@@ -71,11 +77,12 @@ fn analyze_game(pgn_path: &str) {
         println!("{}. Best move: {}", i + 1, best_move);
     }
     engine.quit();
+    Ok(())
 }
 
-fn navigate_game(pgn_path: &str) {
+fn navigate_game(pgn_path: &str) -> Result<(), String> {
     let contents = fs::read_to_string(pgn_path)
-        .expect(&format!("[Chess Analyzer] File error: Could not read file '{}'", pgn_path));
+        .map_err(|e| format!("[Chess Analyzer] File error: Could not read file '{}': {}", pgn_path, e))?;
     
     let mut pgn = PGN{ 
         headers: pgn_header::PgnHeaders::new(), 
@@ -112,10 +119,15 @@ fn navigate_game(pgn_path: &str) {
         println!("{}", current_board);
         
         print!("Enter command (n/p/q/h): ");
-        io::stdout().flush().unwrap();
+        if let Err(e) = io::stdout().flush() {
+            eprintln!("[Chess Analyzer] Warning: Failed to flush output: {}", e);
+        }
         
         let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("[Chess Analyzer] Input error: Failed to read input");
+        if let Err(e) = io::stdin().read_line(&mut input) {
+            eprintln!("[Chess Analyzer] Input error: Failed to read input: {}", e);
+            break;
+        }
         let input = input.trim();
         
         match parse_command(input) {
@@ -145,7 +157,9 @@ fn navigate_game(pgn_path: &str) {
                 println!("  h, help     - Show this help");
                 println!("Press Enter to continue...");
                 let mut _dummy = String::new();
-                io::stdin().read_line(&mut _dummy).expect("[Chess Analyzer] Input error: Failed to read input");
+                if let Err(e) = io::stdin().read_line(&mut _dummy) {
+                    eprintln!("[Chess Analyzer] Input error: Failed to read input: {}", e);
+                }
             }
             Ok(Command::Empty) => {
                 // Do nothing for empty input
@@ -155,6 +169,7 @@ fn navigate_game(pgn_path: &str) {
             }
         }
     }
+    Ok(())
 }
 
 
