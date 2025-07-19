@@ -185,8 +185,7 @@ impl Board {
         self.move_piece(rs, rt, color, Piece::Rook);
 
         // remove all castling rights for the side
-        self.remove_castling_rights(color, true);
-        self.remove_castling_rights(color, false);
+        self.remove_all_castling_rights(color);
     }
 
     fn remove_castling_rights(&mut self, color: Color, is_king_side: bool) {
@@ -198,6 +197,13 @@ impl Board {
         };
 
         self.castling_rights = self.castling_rights & mask;
+    }
+
+    /// Removes all castling rights (both kingside and queenside) for the specified color.
+    /// This is commonly needed when a king moves or during castling.
+    fn remove_all_castling_rights(&mut self, color: Color) {
+        self.remove_castling_rights(color, true);  // Kingside
+        self.remove_castling_rights(color, false); // Queenside
     }
 
     fn apply_normal_move(&mut self, mov: &Move) -> Result<u8, String> {
@@ -241,8 +247,7 @@ impl Board {
             && (source == squares::WHITE_KING_START || source == squares::BLACK_KING_START)
         {
             // remove all castling rights for the side
-            self.remove_castling_rights(color, true);
-            self.remove_castling_rights(color, false);
+            self.remove_all_castling_rights(color);
         }
 
         self.move_piece(source, target.unwrap(), color, piece);
