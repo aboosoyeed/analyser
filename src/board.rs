@@ -9,7 +9,6 @@ use crate::{
     fen::generate,
     r#move::Move,
     role::ByPiece,
-    utils::color_str,
 };
 
 /// Represents a chess board position using bitboards for efficient operations.
@@ -287,20 +286,23 @@ impl fmt::Display for Board {
             write!(f, "{} ", rank + 1)?; // Rank labels
             for file in 0..board::FILES {
                 let index = rank * board::FILES + file;
-                let piece_display = if self.occupied.get_bit(index) {
-                    let color = if self.by_color.white.get_bit(index) {
-                        "yellow"
+                if self.occupied.get_bit(index) {
+                    let color_code = if self.by_color.white.get_bit(index) {
+                        "33" // yellow
                     } else {
-                        "blue"
+                        "34" // blue
                     };
                     match self.get_piece_at_index(index) {
-                        Ok(piece) => color_str(&piece.to_unicode().to_string(), color),
-                        Err(_) => color_str("◻", "gray"), // Fallback for errors
+                        Ok(piece) => {
+                            write!(f, "\x1b[{}m{}\x1b[0m ", color_code, piece.to_unicode())?;
+                        },
+                        Err(_) => {
+                            write!(f, "\x1b[37m◻\x1b[0m ")?; // gray fallback
+                        }
                     }
                 } else {
-                    color_str("◻", "gray")
-                };
-                write!(f, "{} ", piece_display)?;
+                    write!(f, "\x1b[37m◻\x1b[0m ")?; // gray empty square
+                }
             }
             writeln!(f)?;
         }

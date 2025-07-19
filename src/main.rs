@@ -77,7 +77,6 @@ fn navigate_game(pgn_path: &str) {
     let contents = fs::read_to_string(pgn_path)
         .expect(&format!("[Chess Analyzer] File error: Could not read file '{}'", pgn_path));
     
-    let mut board = Board::init();
     let mut pgn = PGN{ 
         headers: pgn_header::PgnHeaders::new(), 
         moves: Vec::new(), 
@@ -87,15 +86,8 @@ fn navigate_game(pgn_path: &str) {
     pgn.extract_headers(contents.clone());
     pgn.extract_moves(contents);
     
-    let moves = pgn.moves.clone();
-    let mut board_states = vec![board.clone()];
+    let moves = &pgn.moves; // Use reference instead of clone
     let mut current_position = 0;
-    
-    // Apply all moves and store board states
-    for mov in moves.iter() {
-        board.apply_move(mov);
-        board_states.push(board.clone());
-    }
     
     println!("Chess Game Navigator");
     println!("Commands: 'n' (next), 'p' (previous), 'q' (quit), 'h' (help)");
@@ -105,13 +97,19 @@ fn navigate_game(pgn_path: &str) {
         // Clear screen
         print!("\x1B[2J\x1B[1;1H");
         
+        // Generate current board state on-demand
+        let mut current_board = Board::init();
+        for i in 0..current_position {
+            current_board.apply_move(&moves[i]);
+        }
+        
         // Display current board
         println!("Position: {}/{}", current_position, moves.len());
         if current_position > 0 {
             println!("Last move: {}", moves[current_position - 1].san);
         }
         println!();
-        println!("{}", board_states[current_position]);
+        println!("{}", current_board);
         
         print!("Enter command (n/p/q/h): ");
         io::stdout().flush().unwrap();
