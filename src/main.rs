@@ -89,7 +89,7 @@ fn navigate_game(pgn_path: &str) {
     
     // Apply all moves and store board states
     for mov in moves.iter() {
-        board.apply_move(mov.clone());
+        board.apply_move(mov);
         board_states.push(board.clone());
     }
     
