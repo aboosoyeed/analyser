@@ -47,6 +47,8 @@ pub struct Board {
     pub half_move_count: u8,
     /// Full move counter (incremented after Black's move)
     pub full_move_count: u16,
+    /// Fast lookup table for piece at each square (None if empty)
+    piece_lookup: [Option<Piece>; 64],
 }
 
 impl Board {
@@ -72,13 +74,41 @@ impl Board {
     /// assert_eq!(board.half_move_count, 0);
     /// ```
     pub fn init() -> Board {
-        Board {
-            by_piece: ByPiece::init(),
-            by_color: ByColor::init(),
-            occupied: Bitboard(game_state::STARTING_OCCUPIED),
+        let by_piece = ByPiece::init();
+        let by_color = ByColor::init();
+        let occupied = Bitboard(game_state::STARTING_OCCUPIED);
+        
+        let mut board = Board {
+            by_piece,
+            by_color,
+            occupied,
             castling_rights: game_state::ALL_CASTLING_RIGHTS,
             half_move_count: game_state::STARTING_HALF_MOVES,
             full_move_count: game_state::STARTING_FULL_MOVES,
+            piece_lookup: [None; 64],
+        };
+        
+        board.rebuild_piece_lookup();
+        board
+    }
+
+    /// Rebuilds the piece lookup table from current bitboard state.
+    ///
+    /// This method scans all piece bitboards and populates the lookup table
+    /// for O(1) piece queries. Called after board initialization and whenever
+    /// the bitboards are modified.
+    fn rebuild_piece_lookup(&mut self) {
+        // Clear the lookup table
+        self.piece_lookup = [None; 64];
+        
+        // Populate with current piece positions
+        for piece in Piece::get_all() {
+            let piece_board = self.by_piece.get(piece);
+            for index in 0..64 {
+                if piece_board.get_bit(index) {
+                    self.piece_lookup[index as usize] = Some(piece);
+                }
+            }
         }
     }
 
@@ -134,6 +164,10 @@ impl Board {
         } else {
             source = Some(self.apply_normal_move(mov));
         }
+        
+        // Update piece lookup table after any move
+        self.rebuild_piece_lookup();
+        
         source
     }
 
@@ -265,18 +299,15 @@ impl Board {
         piece.compute_source(self, mov)
     }
 
-    fn get_piece_at_index(&self, index: u8) -> Result<Piece, ChessError> {
+    pub fn get_piece_at_index(&self, index: u8) -> Result<Piece, ChessError> {
         // Validate square index
         let square = Square::new(index)?;
-        let mask = 1 << square.index();
-
-        for piece in Piece::get_all() {
-            let piece_board = self.by_piece.get(piece);
-            if (piece_board.get() & mask) != 0 {
-                return Ok(piece);
-            }
+        
+        // Use O(1) lookup table instead of O(6) bitboard search
+        match self.piece_lookup[square.index() as usize] {
+            Some(piece) => Ok(piece),
+            None => Err(ChessError::PieceNotFound { square: index })
         }
-        Err(ChessError::PieceNotFound { square: index })
     }
 }
 
