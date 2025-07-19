@@ -77,62 +77,82 @@ impl Move {
     /// let castle = Move::new("O-O".to_string(), 10);
     /// ```
     pub fn new(san: String, index: u16) -> Move {
+        // Parse the SAN string to extract move components
+        let (piece, is_capture, castling, positions, promotion) = Self::parse_san_characters(&san);
         
+        // Parse position information from coordinates
+        let (source, target) = Self::parse_positions(positions);
+        
+        // Ensure we have a valid piece type
+        assert!(piece.is_some(), "piece could not be destructured {}", san);
+        
+        Move { 
+            san, 
+            index, 
+            piece: piece.unwrap(), 
+            is_capture, 
+            castling, 
+            target, 
+            source, 
+            promotion 
+        }
+    }
+
+    /// Parses character-by-character information from the SAN string.
+    /// Extracts castling, captures, positions, and piece information.
+    fn parse_san_characters(san: &str) -> (Option<Piece>, bool, Option<Castling>, Vec<char>, Option<Piece>) {
         let mut piece = Some(Piece::Pawn);
         let mut is_capture = false;
         let mut castling = None;
-        let mut source = (None,None);
-        let mut target = (None,None);
-        let san_chars = san.chars();
-        let mut positions:Vec<char> = vec![];
+        let mut positions: Vec<char> = vec![];
         let mut promotion = None;
-        let mut has_promotion= false;
-        for ch in san_chars {
-            if ch=='O'{
-                castling = Some(Castling::parse(&san));
-                piece = Some(Piece::King)
-            }
-            else if ch =='x' {
+        let mut has_promotion = false;
+        
+        for ch in san.chars() {
+            if ch == 'O' {
+                castling = Some(Castling::parse(san));
+                piece = Some(Piece::King);
+            } else if ch == 'x' {
                 is_capture = true;
-            }
-            else if (ch>='a' && ch<='h') || (ch>='1' && ch<='8') {
+            } else if (ch >= 'a' && ch <= 'h') || (ch >= '1' && ch <= '8') {
                 positions.push(ch);
-            }
-            else if ch=='=' {
+            } else if ch == '=' {
                 has_promotion = true;
-            }
-            else if is_piece(ch){
-                if has_promotion { // last charcter was =
+            } else if is_piece(ch) {
+                if has_promotion {
                     promotion = Piece::from_char(ch);
-                }else{
+                } else {
                     piece = Piece::from_char(ch);
                 }
-                
             }
+        }
+        
+        (piece, is_capture, castling, positions, promotion)
+    }
 
-            
-
-        } 
-
-        if positions.len()>0 {
-            let target_start_index = if positions.len()==3{
-                if let Some(f) = File::from_char(positions[0]){
+    /// Parses position information from the extracted coordinate characters.
+    /// Handles disambiguation and target square resolution.
+    fn parse_positions(positions: Vec<char>) -> ((Option<File>, Option<Rank>), (Option<File>, Option<Rank>)) {
+        let mut source = (None, None);
+        let mut target = (None, None);
+        
+        if !positions.is_empty() {
+            let target_start_index = if positions.len() == 3 {
+                if let Some(f) = File::from_char(positions[0]) {
                     source.0 = Some(f);
-                }else{
-                    source.1 = Rank::from_char(positions[0])
+                } else {
+                    source.1 = Rank::from_char(positions[0]);
                 }
                 1
-            }else{
+            } else {
                 0
             };
 
             target.0 = File::from_char(positions[target_start_index]);
-            target.1 = Rank::from_char(positions[target_start_index+1])
+            target.1 = Rank::from_char(positions[target_start_index + 1]);
         }
         
-
-        assert!( piece.is_some(), "piece could not be destructured {}", san);
-        Move { san, index, piece: piece.unwrap(), is_capture , castling, target, source, promotion}
+        (source, target)
     }
 
     pub fn get_target_index(&self) -> Option<u8> {
