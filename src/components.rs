@@ -232,32 +232,32 @@ impl Sub for File {
 
 #[derive(Copy,Clone,Debug)]
 pub enum Rank{
-    FIRST=0,SECOND,THIRD,FOURTH,FIFTH,SIXTH,SEVENTH,EIGHT,
+    First=0,Second,Third,Fourth,Fifth,Sixth,Seventh,Eighth,
 }
 impl Rank {
     pub fn get_bit_board(&self)->Bitboard{
         match  self {
-            Rank::FIRST =>  Bitboard(0x0000_0000_0000_00FF),
-            Rank::SECOND => Bitboard(0x0000_0000_0000_FF00),
-            Rank::THIRD =>  Bitboard(0x0000_0000_00FF_0000),
-            Rank::FOURTH => Bitboard(0x0000_0000_FF00_0000),
-            Rank::FIFTH =>  Bitboard(0x0000_00FF_0000_0000),
-            Rank::SIXTH =>  Bitboard(0x0000_FF00_0000_0000),
-            Rank::SEVENTH => Bitboard(0x00FF_0000_0000_0000),
-            Rank::EIGHT => Bitboard(0xFF00_0000_0000_0000),
+            Rank::First =>  Bitboard(0x0000_0000_0000_00FF),
+            Rank::Second => Bitboard(0x0000_0000_0000_FF00),
+            Rank::Third =>  Bitboard(0x0000_0000_00FF_0000),
+            Rank::Fourth => Bitboard(0x0000_0000_FF00_0000),
+            Rank::Fifth =>  Bitboard(0x0000_00FF_0000_0000),
+            Rank::Sixth =>  Bitboard(0x0000_FF00_0000_0000),
+            Rank::Seventh => Bitboard(0x00FF_0000_0000_0000),
+            Rank::Eighth => Bitboard(0xFF00_0000_0000_0000),
         }
     }
 
     pub const fn from_char(ch: char) -> Option<Rank> {
         match ch {
-            '1' => Some(Rank::FIRST),
-            '2' => Some(Rank::SECOND),
-            '3' => Some(Rank::THIRD),
-            '4' => Some(Rank::FOURTH),
-            '5' => Some(Rank::FIFTH),
-            '6' => Some(Rank::SIXTH),
-            '7' => Some(Rank::SEVENTH),
-            '8' => Some(Rank::EIGHT),
+            '1' => Some(Rank::First),
+            '2' => Some(Rank::Second),
+            '3' => Some(Rank::Third),
+            '4' => Some(Rank::Fourth),
+            '5' => Some(Rank::Fifth),
+            '6' => Some(Rank::Sixth),
+            '7' => Some(Rank::Seventh),
+            '8' => Some(Rank::Eighth),
             _ => None,
         }
     }   

@@ -19,18 +19,18 @@ use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::{index_to
 /// 
 /// ## Analysis Mode (for chess engine processing)
 /// ```rust
-/// use analyzer::pgn::PGN;
+/// use analyzer::pgn::Pgn;
 /// 
 /// let pgn_content = "1. e4 e5 2. Nf3 Nc6";
-/// let fens = PGN::parse(pgn_content.to_string());
+/// let fens = Pgn::parse(pgn_content.to_string());
 /// // Returns FEN strings for each position after e4, e5, Nf3, Nc6
 /// ```
 /// 
 /// ## Navigation Mode (for interactive game replay)
 /// ```rust
-/// # use analyzer::pgn::PGN;
+/// # use analyzer::pgn::Pgn;
 /// # use analyzer::pgn_header::PgnHeaders;
-/// let mut pgn = PGN {
+/// let mut pgn = Pgn {
 ///     headers: PgnHeaders::new(),
 ///     moves: Vec::new(),
 ///     _move_counter: 0,
@@ -40,7 +40,7 @@ use crate::{pgn_header::PgnHeaders, board::Board, r#move::Move, utils::{index_to
 /// pgn.extract_moves(pgn_content);
 /// // Now pgn.moves contains Move objects for step-by-step navigation
 /// ```
-pub struct PGN{
+pub struct Pgn{
     /// Game metadata like event, players, date, etc.
     pub headers: PgnHeaders,
     /// Sequence of moves in the game
@@ -49,10 +49,10 @@ pub struct PGN{
     pub _move_counter: u16
 }
 
-impl PGN{
+impl Pgn{
 
     pub fn new(contents: String) -> Self {
-        let mut pgn = PGN {
+        let mut pgn = Pgn {
             headers: PgnHeaders::new(),
             moves: Vec::new(),
             _move_counter: 0,
@@ -82,10 +82,10 @@ impl PGN{
     /// # Examples
     /// 
     /// ```rust
-    /// use analyzer::pgn::PGN;
+    /// use analyzer::pgn::Pgn;
     /// 
     /// let pgn = "1. e4 e5 2. Nf3 Nc6";
-    /// let positions = PGN::parse(pgn.to_string());
+    /// let positions = Pgn::parse(pgn.to_string());
     /// // Returns FEN strings for each position after e4, e5, Nf3, Nc6
     /// ```
     pub fn parse(contents: String) -> Vec<String> {

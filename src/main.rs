@@ -1,5 +1,5 @@
 use analyzer::*;
-use analyzer::{board::Board, pgn::PGN, engine::engine::Engine, constants::defaults};
+use analyzer::{board::Board, pgn::Pgn, engine::engine::Engine, constants::defaults};
 use std::{fs, io::{self, Write}};
 use clap::{Parser, Subcommand};
 
@@ -70,7 +70,7 @@ fn analyze_game(pgn_path: &str) -> Result<(), String> {
     let contents = fs::read_to_string(pgn_path)
         .map_err(|e| format!("[Chess Analyzer] File error: Could not read file '{}': {}", pgn_path, e))?;
     let mut engine = Engine::new();
-    let fens = PGN::parse(contents);
+    let fens = Pgn::parse(contents);
 
     for (i, f) in fens.iter().enumerate() {
         let best_move = engine.process_fen(&f);
@@ -84,7 +84,7 @@ fn navigate_game(pgn_path: &str) -> Result<(), String> {
     let contents = fs::read_to_string(pgn_path)
         .map_err(|e| format!("[Chess Analyzer] File error: Could not read file '{}': {}", pgn_path, e))?;
     
-    let mut pgn = PGN{ 
+    let mut pgn = Pgn{ 
         headers: pgn_header::PgnHeaders::new(), 
         moves: Vec::new(), 
         _move_counter: 0 
