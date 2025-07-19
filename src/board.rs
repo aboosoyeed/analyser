@@ -167,12 +167,11 @@ impl Board {
 
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        
-        let mut fmt_str= String::from("");
         for rank in (0..8).rev() {
+            write!(f, "{} ", rank + 1)?; // Rank labels
             for file in 0..8 {
                 let index = rank * 8 + file;
-                let bit = if self.occupied.get_bit(index) { 
+                let piece_display = if self.occupied.get_bit(index) { 
                     let color = if self.by_color.white.get_bit(index){
                         "yellow"
                     }else{
@@ -182,15 +181,17 @@ impl fmt::Display for Board {
                 }else {
                     color_str("◻", "gray") 
                 };
-                fmt_str.push_str(&format!("{} ", bit)) ;
+                write!(f, "{} ", piece_display)?;
             }
-            fmt_str.push_str("\n\r");
+            writeln!(f)?;
         }
-
-        
-        
-        f.write_str(&fmt_str)
-
+        // Add file labels
+        write!(f, "  ")?;
+        for file in 0..8 {
+            write!(f, "{} ", (b'a' + file) as char)?;
+        }
+        writeln!(f)?;
+        Ok(())
     }
 }
 
