@@ -8,6 +8,7 @@ pub mod color;
 pub mod components;
 pub mod utils;
 pub mod r#move;
+pub mod error;
 
 pub mod engine {
     pub mod engine;

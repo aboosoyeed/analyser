@@ -1,6 +1,6 @@
 use core::fmt;
 
-use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::Move, fen::generate, components::Piece, utils::color_str,};
+use crate::{bitboard::Bitboard, role::ByPiece, color::{ByColor, Color}, r#move::Move, fen::generate, components::Piece, utils::color_str, error::{ChessError, Square}};
 
 #[derive(Clone)]
 pub struct Board{
@@ -82,7 +82,7 @@ impl Board {
             let mut opp_piece = self.get_piece_at_index(target.unwrap());
             let mut opponent_target = target.unwrap(); 
             
-            if opp_piece==Err("piece_not_found") && piece==Piece::Pawn{
+            if opp_piece.is_err() && piece==Piece::Pawn{
                  // potentially enpassant
                 opponent_target = if color==Color::White{
                     target.unwrap()-8
@@ -152,15 +152,18 @@ impl Board {
         piece.compute_source(self,mov)
     }
 
-    fn get_piece_at_index(&self,index:u8) ->Result<Piece, &'static str>{
-        let mask = 1<< index;
+    fn get_piece_at_index(&self, index: u8) -> Result<Piece, ChessError> {
+        // Validate square index
+        let square = Square::new(index)?;
+        let mask = 1 << square.index();
+        
         for piece in Piece::get_all(){
             let piece_board = self.by_piece.get(piece);
-            if (piece_board.get() & mask) !=0{
+            if (piece_board.get() & mask) != 0 {
                 return Ok(piece);
             } 
         }
-        Err("piece_not_found")
+        Err(ChessError::PieceNotFound { square: index })
     }
 
 }
@@ -177,7 +180,10 @@ impl fmt::Display for Board {
                     }else{
                         "blue"
                     };
-                    color_str(&self.get_piece_at_index(index).unwrap().to_unicode().to_string(), color) 
+                    match self.get_piece_at_index(index) {
+                        Ok(piece) => color_str(&piece.to_unicode().to_string(), color),
+                        Err(_) => color_str("◻", "gray") // Fallback for errors
+                    } 
                 }else {
                     color_str("◻", "gray") 
                 };

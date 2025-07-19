@@ -35,8 +35,17 @@ impl PGN{
             let source = board.apply_move(&mov);
 
             if source.is_some() {
-                //let (file,rank) =index_to_file_rank(source.unwrap());
-                mov.source = index_to_file_rank(source.unwrap());
+                // Use the safe index_to_file_rank function
+                match index_to_file_rank(source.unwrap()) {
+                    Ok((file, rank)) => {
+                        mov.source = (Some(file), Some(rank));
+                    }
+                    Err(_) => {
+                        // Log error but continue processing - keeps existing behavior
+                        eprintln!("[Chess Analyzer] Warning: Invalid source square index {}", source.unwrap());
+                        mov.source = (None, None);
+                    }
+                }
             }
 
 

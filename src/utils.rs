@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::{components::{Rank, File}, bitboard::Bitboard};
+use crate::{components::{Rank, File}, bitboard::Bitboard, error::{ChessError, Square}};
 
 pub fn compute_attack_squares(occupancy:Bitboard,init_pos:i8,deltas:&[i8], step_only:bool)->u64{
     let mut attack_bitboard: u64 = 0;
@@ -38,15 +38,32 @@ fn _ray_obstructed(occupancy:Bitboard, step_only:bool, pos:i8) ->bool{
 }
 
 
-pub fn index_to_file_rank(index: u8) -> (Option<File>, Option<Rank>) {
-    let file = ('a' as u8 + (index % 8) as u8) as char;
-    let rank = (index / 8)+1;
-    let rank_char = rank.to_string().chars().next().unwrap();
-    (File::from_char(file),Rank::from_char( rank_char))
+pub fn index_to_file_rank(index: u8) -> Result<(File, Rank), ChessError> {
+    // Use the type-safe Square for bounds checking
+    let square = Square::new(index)?;
+    let (file_idx, rank_idx) = square.to_file_rank();
+    
+    // Convert to File and Rank enums with bounds checking
+    let file_char = (b'a' + file_idx) as char;
+    let rank_char = (b'1' + rank_idx) as char;
+    
+    let file = File::from_char(file_char)
+        .ok_or_else(|| ChessError::InvalidCoordinate { 
+            coordinate: format!("file {}", file_char) 
+        })?;
+        
+    let rank = Rank::from_char(rank_char)
+        .ok_or_else(|| ChessError::InvalidCoordinate { 
+            coordinate: format!("rank {}", rank_char) 
+        })?;
+    
+    Ok((file, rank))
 }
 
-pub fn file_rank_to_index(file:File,rank:Rank)->u8{
-    ((rank as u8) ) * 8 + (file as u8)
+pub fn file_rank_to_index(file: File, rank: Rank) -> Result<u8, ChessError> {
+    // Use the type-safe Square for bounds checking
+    let square = Square::from_file_rank(file as u8, rank as u8)?;
+    Ok(square.index())
 }
 
 pub fn is_piece(c: char) -> bool {

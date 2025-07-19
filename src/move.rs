@@ -73,11 +73,13 @@ impl Move {
     }
 
     pub fn get_target_index(&self) -> Option<u8> {
-        let (file,rank) = &self.target;
-        if file.is_none() || rank.is_none(){
+        let (file, rank) = &self.target;
+        if file.is_none() || rank.is_none() {
             return None;
         }
-        return Some(file_rank_to_index(file.unwrap(),rank.unwrap()));
+        // Use the safe file_rank_to_index function, but fall back to None on error
+        // This maintains the existing API while adding safety
+        file_rank_to_index(file.unwrap(), rank.unwrap()).ok()
     }
     
     
